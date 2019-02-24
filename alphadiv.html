@@ -278,8 +278,6 @@ $(document).ready(function () {
 </div>
 
 
-<div id="alpha-diversity" class="section level1">
-<h1>Alpha Diversity</h1>
 <p>For each sample a single measure can be calculated describing the diversity within the sample. The most intuitive is <em>how many different bacteria (OTUs) is observed</em>. But there are others. The phyloseq package supports some X different versions.</p>
 <div id="references" class="section level2">
 <h2>References</h2>
@@ -300,7 +298,6 @@ AlphaD &lt;- pp$data</code></pre>
 AlphaD &lt;- merge(AlphaD,metaD,by.x = &#39;samples&#39;,by.y = &#39;X.SampleID&#39;)
 ggplot(data = AlphaD,aes(x = value)) + geom_histogram() + 
   facet_wrap(~variable, scales = &#39;free&#39;,ncol = 2)</code></pre>
-</div>
 </div>
 
 
