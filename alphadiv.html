@@ -278,6 +278,17 @@ $(document).ready(function () {
 </div>
 
 
+<style>
+pre.bluecars {
+    background-color: #aabbff !important;
+}
+pre.blackcars {
+    background-color: #000000 !important;
+}
+pre.redcars {
+    background-color: #ffbbbb !important;
+}
+</style>
 <p>For each sample a single measure can be calculated describing the diversity within the sample. The most intuitive is <em>how many different bacteria (OTUs) is observed</em>. But there are others. The phyloseq package supports some X different versions.</p>
 <div id="references" class="section level2">
 <h2>References</h2>
@@ -298,6 +309,26 @@ AlphaD &lt;- pp$data</code></pre>
 AlphaD &lt;- merge(AlphaD,metaD,by.x = &#39;samples&#39;,by.y = &#39;X.SampleID&#39;)
 ggplot(data = AlphaD,aes(x = value)) + geom_histogram() + 
   facet_wrap(~variable, scales = &#39;free&#39;,ncol = 2)</code></pre>
+<div id="python-code" class="section level3">
+<h3>Python code</h3>
+<p>You can write in python code.</p>
+<pre class="python"><code>import sys
+if sys.version_info &lt; (3, 0):
+    # Python 2
+    import Tkinter as tk
+else:
+    # Python 3
+    import tkinter as tk
+root = tk.Tk()
+root.title(&quot;Sandwich&quot;)
+tk.Button(root, text=&quot;Make me a Sandwich&quot;).pack()
+tk.mainloop()</code></pre>
+</div>
+<div id="bash-code" class="section level3">
+<h3>Bash code</h3>
+<p>… and even terminal stuff</p>
+<pre class="bash"><code>pick_de_novo_otus.py -i $PWD/seqs.fna -o $PWD/derep_uc/ -p $PWD/dereplication_params.txt</code></pre>
+</div>
 </div>
 
 
