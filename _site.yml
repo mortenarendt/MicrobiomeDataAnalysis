@@ -1,0 +1,37 @@
+name: "MicrobiomeDataAnalysis"
+output_dir: "."
+output:
+  html_document:
+    theme: cosmo
+navbar:
+  title: "Microbiome Data Analysis"
+  left:
+    - text: "Home"
+      href: about.html
+    - text: "Installation"
+      href: dependencies.html
+    - text: "Descriptives"  
+      menu: 
+        - text: "Import"
+          href: import.html  
+        - text: "Preprocessing"
+          href: prepro.html  
+        - text: "alpha diversity"
+          href: alphadiv.html  
+        - text: "beta diversity"
+          href: betadiv.html
+    - text: "Statistical inference"
+      menu: 
+        - text: "Differential Abundance"
+          href: DA.html
+        - text: "ANOVA on beta diversity"
+          href: adonistest.html
+    - text: "Supervised Multivariate models"
+      menu:
+        - text: "phylo-PLSDA"
+          href: phyloplsda.html
+        - text: "Canonical Correlation Analysis"
+          href: cca.html
+    - text: 'Data'
+      href: https://github.com/mortenarendt/MicrobiomeDataAnalysis/tree/master/data
+    
