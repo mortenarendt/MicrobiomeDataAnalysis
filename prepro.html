@@ -11,7 +11,7 @@
 
 
 
-<title>Microbiome Data Analysis</title>
+<title>Preprocessing</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -371,13 +371,76 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Microbiome Data Analysis</h1>
+<h1 class="title toc-ignore">Preprocessing</h1>
 
 </div>
 
 
-<p>This site serves as dry-lab material for the course 7 days PhD <em>Microbiome analysis using 2nd and 3rd generation DNA sequencing + multivariate data analysis</em>. Here you will find content on statistical data analysis of amplicon-seq microbiome data including preprocessing, descriptives, univariate- and multivariate statistical modelling ending with comparison additional layers of omics data.</p>
-<p>We heavily draw on the great work of the authors of phyloseq and metagenomeseq.</p>
+<p>Why should the data be preprocessed?</p>
+<p>For amplicon sequencing type of data, like 16S, there is in general three inherent characteristics of the count table:</p>
+<ul>
+<li><strong>Sparsity</strong> meaning that the vast majority of the numbers in the count table is zero.</li>
+<li><strong>Compositionality</strong>. Due to the protocol only a fraction of the total DNA content is amplified, however, this amplification is assumed to be stochastic between samples, and as the same amount of DNA is thrown at the sequencer, then all samples should end up with the same number of counts. This is not the exactly the case, but differences in the so called <em>library size</em> is non informative, and the data is assumed compositional.</li>
+<li><strong>High number of variables</strong> (OTUs). Due to biology being complex and technology being sensitive, there is often a high number of different features (OTUs) from a study. These indeed refer to fine-grained information, but naturally carry statistical challenges.</li>
+</ul>
+<div id="filtering-samples" class="section level1">
+<h1>Filtering samples</h1>
+<p>Outlying samples or samples with low quality (few sequences) should be removed up-front. The function prune_samples() in phyloseq can be used for this.</p>
+</div>
+<div id="filtering-variables" class="section level1">
+<h1>Filtering variables</h1>
+<p>Criterion for removing variables are usually the frequency of samples with non-zero counts. The function filter_taxa() in phyloseq can be used for this.</p>
+</div>
+<div id="normalizing-or-rarefying" class="section level1">
+<h1>Normalizing or rarefying</h1>
+<p>Due to inherent constitutionality within each samples, normalization or rarefaction is needed either as preprocessing or as a part of the statistical modeling.</p>
+<p><em>Total Sum Scaling</em> (TSS) where each count within a sample is divided by the total number of counts within the sample, is the most intuitive and straight forward method for handling differences in library size. The function transform_sample_counts() in phyloseq can be used for this.<br />
+However, due to the library size being very much dependent on often very few OTUs carrying most of the reads within a sample, the uncertainty on these few OTUs consequently inflates the entire count table. One alternative is the <em>Cumulative Sum Scaling</em> (CSS) which normalizes by the sum of the lowest <em>not so common</em> OTUs within each sample. Statistically, this sum is less uncertain, and hence less inflation of uncertainty on the entire dataset. The function phyloseq_transform_css(), an add on to phyloseq from the <a href="https://rdrr.io/github/vmikk/metagMisc/">metagMisc package</a> can be used for this.</p>
+<p><em>Rarefaction</em> is a sub sampling technique where an equal amount of reads is stochastically drawn from the total amount of sequences for each sample. Consequently the data becomes <em>exact</em> compositional, however, the sensitivity for discovery of rare / low count species is going down. The function rarefy_even_depth() in phyloseq can be used for this.</p>
+</div>
+<div id="transformation" class="section level1">
+<h1>Transformation</h1>
+<p>For some upstream statistical models the data might be better served by a monotone, but non-linear, transformation. The inherent distribution, where a few OTUs carry most of the reads, means that e.g. some beta diversity metrics will naturally strongly depend on those OTUs, with the consequence that the not-so-common OTUs do not contributes to variation. One way to counteract this, is to make the larger smaller while making the smaller larger…. the sqrt() and log() transformation does exactly that. However, log(0) is -infinity and hence destroys everything. When using the log() transform a fix needs to be incorporated for instance log(x + pc) where pc is a <em>pseudo count</em>. The function transform_sample_counts() in phyloseq can be used for this.</p>
+</div>
+<div id="agglomeration" class="section level1">
+<h1>Agglomeration</h1>
+<p>OTU level resolution is sometimes not needed due to the biological questions manifesting at a higher taxonomic level. In such cases, all the counts within a taxonomic similar group of OTUs can be merged leading to fever features and less sparsity. The function tax_glom() in phyloseq can be used for this.</p>
+</div>
+<div id="references" class="section level1">
+<h1>References</h1>
+<p><a href="https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-016-0208-8">Thorsen, Jonathan, Asker Brejnrod, Martin Mortensen, Morten A. Rasmussen, Jakob Stokholm, Waleed Abu Al-Soud, Søren Sørensen, Hans Bisgaard, and Johannes Waage. <strong>Large-scale benchmarking reveals false discoveries and count transformation sensitivity in 16S rRNA gene amplicon data analysis methods used in microbiome studies</strong>, <em>Microbiome</em> 4, no. 1 (2016): 62.</a></p>
+<p><a href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1003531">McMurdie, Paul J., and Susan Holmes. <strong>Waste not, want not: why rarefying microbiome data is inadmissible</strong> <em>PLoS computational biology</em> 10, no. 4 (2014): e1003531.</a></p>
+<p><a href="http://www.nature.com/nmeth/journal/v10/n12/full/nmeth.2658.html">Paulson, Joseph N., O. Colin Stine, Héctor Corrada Bravo, and Mihai Pop. <strong>Differential abundance analysis for microbial marker-gene surveys</strong>. Nature methods 10, no. 12 (2013): 1200.</a></p>
+<p>Xia, Yinglin, Jun Sun, and Ding-Geng Chen. <strong>Statistical analysis of microbiome data with R</strong>. Springer, 2018.</p>
+</div>
+<div id="exercise" class="section level1">
+<h1>Exercise</h1>
+<p>Draw histogram of library size</p>
+<p>Play around with different preprocessing techniques and collect the</p>
+<p>. Use those to study the differences caused by preprocessing by correlating all versus all. As inspiration you can use the code below.</p>
+<pre class="r"><code>library(phyloseq)
+library(ggplot2)
+library(vegan)
+library(metagMisc)
+load(&#39;./data/Mice_csec.RData&#39;)
+
+df &lt;- data.frame(libsize = sample_sums(phyX))
+ggplot(data = df, aes(libsize)) + geom_histogram()
+metaD &lt;- data.frame(sample_data(phyX))
+
+# TSS normalize
+phyXpp &lt;- transform_sample_counts(phyX,function(x) x / sum(x))
+
+phyXpp &lt;- phyloseq_transform_css(phyX)  
+# filter of rare OTU&#39;s
+fr &lt;- 0.8
+n &lt;- 31 # number of samples
+phyXpp &lt;- filter_taxa(phyXpp, function(x) sum(x &gt; 0)&gt;n*fr, TRUE)
+# calculate beta diversity
+dd &lt;- distance(phyXpp,&#39;bray&#39;)
+m &lt;- adonis(dd~factor(Birth_mode),data = metaD,permutations = 1)
+m$aov.tab$R2*100</code></pre>
+</div>
 
 
 
