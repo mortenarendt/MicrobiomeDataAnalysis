@@ -8,18 +8,18 @@ navbar:
   left:
     - text: "Home"
       href: about.html
-    - text: "Installation"
-      href: dependencies.html
-    - text: "Bioinformatics"
-      menu: 
-        - text: "QIIME2"
-          href: qiime2.html
-        - text: "Albacore, Porechop and MinKNOW"
-          href: pipelines.html
-        - text: "ON-rep-seq" 
-          href: onrepseq.html
-        - text: 'other stuff from Lukazs/Josue/Dennis'  
-          href: stuff.html
+#    - text: "Installation"
+#      href: dependencies.html
+#    - text: "Bioinformatics"
+#      menu: 
+#        - text: "QIIME2"
+#          href: qiime2.html
+#        - text: "Albacore, Porechop and MinKNOW"
+#          href: pipelines.html
+#        - text: "ON-rep-seq" 
+#          href: onrepseq.html
+#        - text: 'other stuff from Lukazs/Josue/Dennis'  
+#          href: stuff.html
     - text: "Descriptives"  
       menu: 
         - text: "Import"

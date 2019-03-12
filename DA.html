@@ -281,30 +281,6 @@ $(document).ready(function () {
         <li>
   <a href="about.html">Home</a>
 </li>
-<li>
-  <a href="dependencies.html">Installation</a>
-</li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    Bioinformatics
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-    <li>
-      <a href="qiime2.html">QIIME2</a>
-    </li>
-    <li>
-      <a href="pipelines.html">Albacore, Porechop and MinKNOW</a>
-    </li>
-    <li>
-      <a href="onrepseq.html">ON-rep-seq</a>
-    </li>
-    <li>
-      <a href="stuff.html">other stuff from Lukazs/Josue/Dennis</a>
-    </li>
-  </ul>
-</li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
     Descriptives
@@ -394,7 +370,9 @@ $(document).ready(function () {
 <li>Boost the discovery chance by filter and/or aglommeration</li>
 </ul>
 <p>The paper by Thorsen et al 2016 investigates a range of statistical strategies on both the ability to sort the OTUs from the most discriminatory to the least, as well as the false discovery rate control. Russel et al (2019) have streamlined this approach for selecting the relevant statistical engine, which nicely screens +20 methods in very few lines of code (see <a href="https://github.com/Russel88/DAtest">DAtest</a> for code)</p>
-<p>(see refs below) # Exercise</p>
+<p>(see refs below)</p>
+<div id="exercise" class="section level1">
+<h1>Exercise</h1>
 <ul>
 <li><p>Rarefy the <em>mice birth mode</em> data to even depth, and use the phyloseq_to_deseq2() function to convert format including birht mode as class information.</p></li>
 <li><p>Perform DA test using DESeq() from the DESeq2 library. You might need to install this library in advance.</p></li>
@@ -520,6 +498,7 @@ df &lt;- data.frame(est_DESeq = tb$log2FoldChange, se_DESeq = tb$lfcSE, pv_DESeq
 df &lt;- cbind(df, txtb)
 df$name &lt;- rownames(df)
 ggplot(data = df, aes(pv_DESeq, pv_MGS)) + geom_point() + scale_y_log10() + scale_x_log10()</code></pre>
+</div>
 <div id="references" class="section level1">
 <h1>References</h1>
 <p><a href="https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-016-0208-8">Thorsen, Jonathan, Asker Brejnrod, Martin Mortensen, Morten A. Rasmussen, Jakob Stokholm, Waleed Abu Al-Soud, Søren Sørensen, Hans Bisgaard, and Johannes Waage. <strong>Large-scale benchmarking reveals false discoveries and count transformation sensitivity in 16S rRNA gene amplicon data analysis methods used in microbiome studies</strong>, <em>Microbiome</em> 4, no. 1 (2016): 62.</a></p>

@@ -281,30 +281,6 @@ $(document).ready(function () {
         <li>
   <a href="about.html">Home</a>
 </li>
-<li>
-  <a href="dependencies.html">Installation</a>
-</li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    Bioinformatics
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-    <li>
-      <a href="qiime2.html">QIIME2</a>
-    </li>
-    <li>
-      <a href="pipelines.html">Albacore, Porechop and MinKNOW</a>
-    </li>
-    <li>
-      <a href="onrepseq.html">ON-rep-seq</a>
-    </li>
-    <li>
-      <a href="stuff.html">other stuff from Lukazs/Josue/Dennis</a>
-    </li>
-  </ul>
-</li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
     Descriptives
@@ -387,46 +363,66 @@ pre.redcars {
     background-color: #ffbbbb !important;
 }
 </style>
-<p>For each sample a single measure can be calculated describing the diversity within the sample. The most intuitive is <em>how many different bacteria (OTUs) is observed</em>. But there are others. The phyloseq package supports some +5 different versions.</p>
-<div id="references" class="section level2">
-<h2>References</h2>
-<p>The chapters ## to XX in <a href="https://www.soinc.org/sites/default/files/uploaded_files/4-17_MICROBES_AND_ECOLOGY.pdf"><em>The very good book that Dennis or Lukasz might know the name of</em></a> (which is probably not the one in the link!) gives a description of alpha diversity.</p>
-</div>
-<div id="exercise" class="section level2">
-<h2>Exercise</h2>
-<ul>
-<li>Calculate the alpha diversity for the XX samles using phyloseq.</li>
-</ul>
+<p>For each sample a single measure can be calculated describing the diversity within the sample. The most intuitive is <em>how many different bacteria (OTUs) is observed</em>. But there are others. The phyloseq package with the function plot_richness() supports seven different versions.</p>
+<p>These can easily be calculated and visualized according to a given design.</p>
 <pre class="r"><code>library(phyloseq)
+load(&#39;./data/Mice_csec.RData&#39;)
+
 pp &lt;- plot_richness(phyX)
-AlphaD &lt;- pp$data</code></pre>
+AlphaD &lt;- pp$data
+
+ggplot(data = AlphaD, aes(Birth_mode, value, fill = Birth_mode)) + 
+  geom_boxplot() + 
+  geom_jitter() + 
+  facet_wrap(~variable, scales = &#39;free&#39;) + 
+  theme(legend.position = &#39;top&#39;)</code></pre>
+<p><img src="alphadiv_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p>What you see here, is some indications of <em>vaginal delivery</em> results in lower diversity.</p>
+<p>Shannon diversity is a metric with relatively high dependency on rare OTUs. <em>Simpson</em> diversity (and <em>Inverse Simpson</em>) depends on the even-ness of the observed OTUs in the samples and is hence relatively independent on rare species, as is obvious from the mathematical formula. All three measures seems to be related to birth mode.</p>
+<p>In order to get more hands-on experience with alpha diversity and especially how different preprocessing techniques influences these metrics, the exercise below show case how inherient the stocastisity of the sequencing depth is in the data.</p>
+<div id="exercise" class="section level1">
+<h1>Exercise</h1>
 <ul>
-<li>Merge these with the meta data and make a visualisation of the distribution.</li>
+<li><p>Rerun the above alpha diversity analysis with no preprocessing of the data</p></li>
+<li><p>Compare each measure of alpha diversity with the library size (number of reads per sample). What is problematic? (You can take inspiration in the code below on how to do this in R)</p></li>
 </ul>
-<pre class="r"><code>library(ggplot2)
-AlphaD &lt;- merge(AlphaD,metaD,by.x = &#39;samples&#39;,by.y = &#39;X.SampleID&#39;)
-ggplot(data = AlphaD,aes(x = value)) + geom_histogram() + 
-  facet_wrap(~variable, scales = &#39;free&#39;,ncol = 2)</code></pre>
-<div id="python-code" class="section level3">
-<h3>Python code</h3>
-<p>You can write in python code.</p>
-<pre class="python"><code>import sys
-if sys.version_info &lt; (3, 0):
-    # Python 2
-    import Tkinter as tk
-else:
-    # Python 3
-    import tkinter as tk
-root = tk.Tk()
-root.title(&quot;Sandwich&quot;)
-tk.Button(root, text=&quot;Make me a Sandwich&quot;).pack()
-tk.mainloop()</code></pre>
+<pre class="r"><code>libsize &lt;- data.frame(libsize = apply(otu_table(phyX),2,sum))
+
+# merge
+AlphaD$X.SampleID &lt;- as.character(trimws(AlphaD$X.SampleID))
+AlphaD &lt;- merge(AlphaD, libsize, by.x = &#39;X.SampleID&#39;, by.y = &#39;row.names&#39;)
+
+ggplot(data = AlphaD, aes(libsize,value)) + 
+  geom_point() + 
+  stat_smooth(method = lm) + 
+  facet_wrap(~variable, scales = &#39;free&#39;)</code></pre>
+<p>Two preprocessing techniques are investigated in terms their ability to remove the dependency on the library size. Namely rarefaction and OTU-filtering.</p>
+<ul>
+<li>Rarefy the sample to even depth, and calculate the corresponding alpha diversity measures</li>
+</ul>
+<pre class="r"><code>phyXrare &lt;- rarefy_even_depth(phyX)
+AlphaDrare &lt;- plot_richness(phyXrare)$data</code></pre>
+<ul>
+<li>Merge with the <strong>original library size</strong> and check if you had succes.</li>
+</ul>
+<pre class="r"><code>AlphaDrare$X.SampleID &lt;- as.character(trimws(AlphaDrare$X.SampleID))
+AlphaDrare &lt;- merge(AlphaDrare, libsize, by.x = &#39;X.SampleID&#39;, by.y = &#39;row.names&#39;)
+
+ggplot(data = AlphaDrare, aes(....)) + </code></pre>
+<ul>
+<li>Now try to use a filter that removes rare taxa</li>
+</ul>
+<pre class="r"><code>phyXfilt &lt;- filter_taxa(phyX,function(x) sum(x&gt;0) &gt; ??? , TRUE)
+
+AlphaDfilt &lt;- plot_richness(phyXfilt)$data
+AlphaDfilt$X.SampleID &lt;- as.character(trimws(AlphaDfilt$X.SampleID))
+AlphaDfilt &lt;- merge(AlphaDfilt, libsize, by.x = &#39;X.SampleID&#39;, by.y = &#39;row.names&#39;)
+ggplot(data = AlphaDfilt, aes(...)) + </code></pre>
+<p>What you have learned here is that sequencing depth - and its variation between samples - inheriently affects data analysis. Preprocessing is capable of handling these issues, but <strong>only to some extend</strong>.</p>
 </div>
-<div id="bash-code" class="section level3">
-<h3>Bash code</h3>
-<p>… and even terminal stuff</p>
-<pre class="bash"><code>pick_de_novo_otus.py -i $PWD/seqs.fna -o $PWD/derep_uc/ -p $PWD/dereplication_params.txt</code></pre>
-</div>
+<div id="references" class="section level1">
+<h1>References</h1>
+<p>Xia, Yinglin, Jun Sun, and Ding-Geng Chen. <strong>Statistical analysis of microbiome data with R</strong>. Springer, 2018. Chapter 6.</p>
 </div>
 
 

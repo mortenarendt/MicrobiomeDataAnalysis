@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Beta Diversity</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Microbiome Data Analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="about.html">Home</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Descriptives
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="import.html">Import</a>
+    </li>
+    <li>
+      <a href="prepro.html">Preprocessing</a>
+    </li>
+    <li>
+      <a href="alphadiv.html">alpha diversity</a>
+    </li>
+    <li>
+      <a href="betadiv.html">beta diversity</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Statistical inference
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="DA.html">Differential Abundance</a>
+    </li>
+    <li>
+      <a href="adonistest.html">ANOVA on beta diversity</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Supervised Multivariate models
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="phyloplsda.html">phylo-PLSDA</a>
+    </li>
+    <li>
+      <a href="cca.html">Canonical Correlation Analysis</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="https://github.com/mortenarendt/MicrobiomeDataAnalysis/tree/master/data">Data</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Beta Diversity</h1>
+
+</div>
+
+
+<p>Alpha diversity descripes the diversity <em>within</em> a sample. Beta diversity, on the other hand, descriptes the diversity <em>between</em> samples. This implies that beta diversity measures can <em>not</em> be calculated for a single sample, but is calculated for <em>all pairs</em> of samples in the dataset.</p>
+<p>So, if you have 10 samples, then there is <span class="math inline">\(9 + 8 + .... + 1 = 45\)</span> beta diversity measures!</p>
+<p>Each beta diversity measure measures the similarity between the corresponding two samples. That is a distance in <em>microbiome space</em>. I.e. is <span class="math inline">\(\beta diversity_{i,j} = 0\)</span> for sample <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> then the two samples are exactly similar. If <span class="math inline">\(\beta diversity_{i,j} &gt;&gt; 0\)</span> is large, then the two samples are very distinct.</p>
+<p>Beta diversity measures are by definition non-negative numbers.</p>
+<p>While this can seem rather complex, combining beta diversity measures with dimentionallity reduction models such as Principal Component Analysis, comprise a very powerful tool for visualizing similarities and sisimilarities between samples.</p>
+<div id="from-otu-table-to-distance-table" class="section level1">
+<h1>From OTU table to Distance table</h1>
+<div class="figure">
+<img src="figs/OTU2bdiv.png" />
+
+</div>
+<p>Given an OTU table with <span class="math inline">\(n\)</span> samples and <span class="math inline">\(p\)</span> variables (OTUs): <span class="math inline">\(\mathbf{C}\)</span> the first task is to calculate all <span class="math inline">\(n(n-1)/2\)</span> pairwise distances and represent those in a symmetric <span class="math inline">\(n\)</span> by <span class="math inline">\(n\)</span> matrix <span class="math inline">\(\mathbf{D}\)</span>.</p>
+<p>There are several different ways to calculate the beta diversity. Check out the distanceMethodList to see those supported by phyloseq.</p>
+<p>These can in general be grouped according to two criterions:</p>
+<ul>
+<li><p>Sensitivity towards abundance or presence absense.</p></li>
+<li><p>Incorporation of phylogentic similarity.</p></li>
+</ul>
+<p>A thorough description can be found else where. Here we are going to focus on four common methods, namely <strong>Jaccard</strong>, <strong>Bray Curtis</strong>, <strong>weighted-</strong> and <strong>unweighted UNIFRAC</strong>, as these methods span the criterions mentioned above.</p>
+<p>Let <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> be count vectors for two samples with equally many features (OTUs)</p>
+</div>
+<div id="bray-curtis-vs-jaccard" class="section level1">
+<h1>Bray Curtis vs Jaccard</h1>
+<p>The <strong>Jaccard’s index</strong> solely focus on presence/absence and hence do not distinguis a OTU on its abundance. On the other hand <strong>Bray Curtis</strong> focuses on abundance.</p>
+<p><strong>Jaccard’s index</strong> is defined as follows</p>
+<p><span class="math display">\[S_{a,b} = \frac{a&gt;0 \cap b&gt;0}{a&gt;0 \cup b&gt;0} = \frac{#common OTUs}{#total OTUs}\]</span></p>
+<p><strong>Bray Curtis</strong> dissimilarity index relates to the so-called Manhatten distance, and measures, for each OTU the descripancy in abundance. Normalized, and summed</p>
+<p><span class="math display">\[BC_{a,b} = \frac{\sum |a_i - b_i |}{\sum (a_i + b_i)} \]</span> for <span class="math inline">\(i = 1,...,p\)</span></p>
+<p>Two observations:</p>
+<p>For OTU’s <em>absent</em> in both samples <span class="math inline">\(|a_i - b_i | = 0\)</span> which implies that BC only depends on observed OTUs. BC is insensitive towards total sum normalizion, as this is an inherent part of the denominator.</p>
+</div>
+<div id="unifrac" class="section level1">
+<h1>UNIFRAC</h1>
+<p>Both, Jaccard and Bray Curtis makes a <em>flat</em> comparison of the samples, meaning, that any two different OTUs are alike. This, however we know is not the case, as OTUs belonging to the same taxonomic group (say Family) are <em>more</em> similar than two belonging to different groups. Utilizing this actively in the computation of similarities have some advances, as it removes uncertainty due to somewhat wrong annotation, reduces emphasis on differences between phylogenetic similar OTUs and enhances differences due to diffences on a diverse phylogenetic level.</p>
+<p>In line with Jaccard / Bray Curtis, Unifrac can be computed focusing on presence/absence as well as abundance. These are called unweigted and weighted unifrac respectively.</p>
+</div>
+<div id="from-distance-table-to-pcoa-plot" class="section level1">
+<h1>From Distance table to PCoA plot</h1>
+</div>
+<div id="exercise" class="section level1">
+<h1>Exercise</h1>
+<ul>
+<li>Compute all four diversity measures directly on the <em>Rat</em> dataset. You might want to include some preprocessing.</li>
+</ul>
+<pre class="r"><code>library(phyloseq)
+load(&#39;./data/Rats_inulin.RData&#39;); 
+
+ordBC &lt;- ordinate(phyX, &quot;PCoA&quot;, &quot;bray&quot;)
+ordJC &lt;- ordinate(phyX, &quot;PCoA&quot;, &quot;jaccard&quot;)
+ordUF &lt;- ordinate(phyX, &quot;PCoA&quot;, &quot;unifrac&quot;)
+ordwUF &lt;- ordinate(phyX, &quot;PCoA&quot;, &quot;wunifrac&quot;)
+
+smpID &lt;- sample_data(phyX)$X.SampleID
+
+df &lt;- rbind(data.frame(ordBC$vectors[,1:4],X.SampleID = smpID, method = &#39;BC&#39;),
+            data.frame(ordJC$vectors[,1:4],X.SampleID = smpID,method = &#39;Jaccard&#39;),
+            data.frame(ordUF$vectors[,1:4],X.SampleID = smpID,method = &#39;unifrac&#39;),
+            data.frame(ordwUF$vectors[,1:4],X.SampleID = smpID,method = &#39;wunifrac&#39;))
+
+# add sample_data info
+df &lt;- merge(df, data.frame(sample_data(phyX)), by = &#39;X.SampleID&#39;)
+
+
+ggplot(data = df, aes(Axis.1,Axis.2, 
+                      color = factor(Description),
+                      shape = time, 
+                      group = factor(Description):factor(time))) + 
+  geom_point() + 
+  stat_ellipse() + 
+  facet_wrap(~method,scales = &#39;free&#39;)</code></pre>
+<ul>
+<li><p>Based on the formulation, which of the methods are sensitive towards total sum normalization?</p></li>
+<li><p>Compare the different similarity methods by vectorizing and correlating the distance objects.</p></li>
+</ul>
+<pre class="r"><code>D_BC &lt;- phyloseq::distance(phyX, &quot;bray&quot;)
+D_JC &lt;- phyloseq::distance(phyX, &quot;jaccard&quot;)
+D_UF &lt;- phyloseq::distance(phyX,  &quot;unifrac&quot;)</code></pre>
+<pre><code>## Warning in UniFrac(physeq, ...): Randomly assigning root as -- OTU_1963 --
+## in the phylogenetic tree in the data you provided.</code></pre>
+<pre><code>## Warning in matrix(tree$edge[order(tree$edge[, 1]), ][, 2], byrow = TRUE, :
+## data length [6493] is not a sub-multiple or multiple of the number of rows
+## [3247]</code></pre>
+<pre class="r"><code>D_wUF &lt;- phyloseq::distance(phyX, &quot;wunifrac&quot;)</code></pre>
+<pre><code>## Warning in UniFrac(physeq, weighted = TRUE, ...): Randomly assigning root
+## as -- OTU_2307 -- in the phylogenetic tree in the data you provided.
+
+## Warning in UniFrac(physeq, weighted = TRUE, ...): data length [6493] is not
+## a sub-multiple or multiple of the number of rows [3247]</code></pre>
+<pre class="r"><code>dist_df &lt;- data.frame(bray = as.vector(D_BC), 
+           jaccard = as.vector(D_JC), 
+           unifrac = as.vector(D_UF), 
+           wunifrac = as.vector(D_wUF))
+
+cor(dist_df)</code></pre>
+<pre><code>##               bray   jaccard   unifrac  wunifrac
+## bray     1.0000000 0.9921559 0.4917940 0.6633272
+## jaccard  0.9921559 1.0000000 0.4937962 0.6706447
+## unifrac  0.4917940 0.4937962 1.0000000 0.4740522
+## wunifrac 0.6633272 0.6706447 0.4740522 1.0000000</code></pre>
+<ul>
+<li>The experiment is longitudinal with before and after diet (sausage) intervention. Try to infer this on the PCoA plot.</li>
+</ul>
+<pre class="r"><code>ggplot(data = df, aes(Axis.1,Axis.2, 
+                      color = factor(Description),
+                      shape = time, 
+                      group = ID)) + 
+  geom_point() +
+  geom_line() + 
+  stat_ellipse(aes(group = factor(Description):factor(time))) + 
+  facet_wrap(~method,scales = &#39;free&#39;)</code></pre>
+<p><img src="betadiv_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<ul>
+<li><p>Are there any tendencies towards each rat being more similar with it self over time?</p></li>
+<li><p>Try to compute a normal linear anova model with the component axis (1,2,..) as response dependent on time and rat ID.</p></li>
+</ul>
+<pre class="r"><code>mdl &lt;- lm(data = df[df$method==&#39;Jaccard&#39;,],Axis.1~ID + time*Description)
+anova(mdl)</code></pre>
+<p>This is kinda add hoc, as the composition is captured in not-only a single component. I.e. instead of using Axis.1 we would like to use all the Axes,… or the entire distance matrix. This is exactly the purpose of permanova. See more under <strong>Statistical inference</strong> -&gt; <strong>ANOVA on beta diversity</strong>.</p>
+</div>
+<div id="references" class="section level1">
+<h1>References</h1>
+<p><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3413390/">Chen, Jun, Kyle Bittinger, Emily S. Charlson, Christian Hoffmann, James Lewis, Gary D. Wu, Ronald G. Collman, Frederic D. Bushman, and Hongzhe Li. <strong>Associating microbiome composition with environmental covariates using generalized UniFrac distances</strong>. Bioinformatics 28, no. 16 (2012): 2106-2113.</a></p>
+<p><a href="https://www.nature.com/articles/ismej2016139">Schmidt, Thomas Sebastian Benedikt, João Frederico Matias Rodrigues, and Christian Von Mering. <strong>A family of interaction-adjusted indices of community similarity</strong> The ISME journal 11, no. 3 (2017): 791.</a></p>
+<p><a href="https://aem.asm.org/content/aem/71/12/8228.full.pdf">Lozupone, Catherine, and Rob Knight. <strong>UniFrac: a new phylogenetic method for comparing microbial communities</strong>. Appl. Environ. Microbiol. 71, no. 12 (2005): 8228-8235.</a></p>
+<p>Xia, Yinglin, Jun Sun, and Ding-Geng Chen. <strong>Statistical analysis of microbiome data with R</strong>. Springer, 2018. Chapter 6.</p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
