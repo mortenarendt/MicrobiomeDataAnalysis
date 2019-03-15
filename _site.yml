@@ -20,10 +20,10 @@ navbar:
 #          href: onrepseq.html
 #        - text: 'other stuff from Lukazs/Josue/Dennis'  
 #          href: stuff.html
+    - text: "Installation"
+      href: pkgs.html  
     - text: "Descriptives"  
       menu: 
-        - text: "Packages"
-          href: pkgs.html  
         - text: "Preprocessing"
           href: prepro.html  
         - text: "alpha diversity"
