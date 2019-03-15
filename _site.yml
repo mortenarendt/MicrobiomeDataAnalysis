@@ -22,8 +22,8 @@ navbar:
 #          href: stuff.html
     - text: "Descriptives"  
       menu: 
-        - text: "Import"
-          href: import.html  
+        - text: "Packages"
+          href: pkgs.html  
         - text: "Preprocessing"
           href: prepro.html  
         - text: "alpha diversity"
@@ -38,8 +38,10 @@ navbar:
           href: adonistest.html
     - text: "Supervised Multivariate models"
       menu:
-        - text: "phylo-PLSDA"
-          href: phyloplsda.html
+#        - text: "phylo-PLSDA"
+#          href: phyloplsda.html
+        - text: "Heatmaps"
+          href: hm.html
         - text: "Canonical Correlation Analysis"
           href: cca.html
     - text: 'Data'

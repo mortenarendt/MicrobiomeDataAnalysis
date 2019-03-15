@@ -11,7 +11,7 @@
 
 
 
-<title>Preprocessing</title>
+<title>Canonical Correlation Analysis</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -347,92 +347,134 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Preprocessing</h1>
+<h1 class="title toc-ignore">Canonical Correlation Analysis</h1>
 
 </div>
 
 
-<p>Why should the data be preprocessed?</p>
-<p>For amplicon sequencing type of data, like 16S, there is in general three inherent characteristics of the count table:</p>
+<p>In order to answer biological questions, often a combination of high-throughput data is generated. Especially in combination with microbiome types of data, the associated metabolome is naturally of interest, as these two sources together reflects <em>who are there</em> and <em>what do they do</em>.</p>
+<p>In the analysis of such data a natural starting point is to look for common structure. That is; which types of bacteria are correlated to a certain type of metabolites.</p>
+<div id="canonical-correlation-analysis" class="section level1 unnumbered">
+<h1>Canonical Correlation Analysis</h1>
+<p>Canonical correlation analysis is a rather old statistical technique for finding common components between two sets of correlated variables such as microbiome and metabolomics data.</p>
+<p>For an introduction and some <em>getting started</em> code check out the <a href="http://mixomics.org/methods/rcca/">mixOmics package webpage</a>.</p>
+<p>Indeed the vanilla CCA is limited due to dimentionallity issues from way to many variables compared to number of samples. Therefore several attemps has been made to circumvent this. Here we will exchange correlation by covariance to add a simple fix.</p>
+<p>Below is a 2 component canonical covariance model.</p>
+<pre class="r"><code>library(structMultMdl)
+library(phyloseq)
+library(tidyverse)
+load(&#39;./data/Rats_inulin.RData&#39;)
+
+phyXpp &lt;- subset_samples(phyX, !is.na(Acetate))
+phyXpp &lt;- filter_taxa(phyXpp, function(x) sum(x&gt;0)&gt;0, TRUE)
+phyXpp &lt;- transform_sample_counts(phyXpp, function(x) x/sum(x))
+
+OTUtb &lt;- data.frame(t(otu_table(phyXpp)))
+
+Mtb &lt;- sample_data(phyXpp)[,c(&quot;Acetate&quot;,&quot;Butyrate&quot;,&quot;Fructose&quot;,&quot;Glucose&quot;,&quot;Lactate&quot;,&quot;Propionate&quot;,&quot;Xylose&quot;)]
+# preprocess the Mtb data
+Mtb$Xylose &lt;- Mtb$Xylose + 0.141/2 # there is zeros for this one - so to fix log we need to add a bit. 
+Mtb &lt;- log(Mtb)
+
+# scale the variables
+GM &lt;- as.matrix(scale(OTUtb, center = T))
+mtb &lt;- as.matrix(scale(Mtb, center = T))
+
+results &lt;- pCCA(mtb,GM,ncomp = 2, na = 0,nperm = 3)
+
+print(results$res_df)</code></pre>
+<pre><code>##   A p_corr_cmp1 p_corr_cmp2 p_var_cmp1 p_var_cmp2
+## 1 0           0           0          0          0</code></pre>
+<p>Now, lets try to extract the model parameters and plot them</p>
+<pre class="r"><code># dig out scores and loadings and plotit. 
+scores &lt;- data.frame(tx = results$a_results[[1]]$model$tx,
+                     ty = results$a_results[[1]]$model$ty)
+
+loadsY &lt;- data.frame(wy = results$a_results[[1]]$model$Wy)
+loadsY &lt;- cbind(loadsY, tax_table(phyXpp), by = &#39;row.names&#39;)
+
+loadsX &lt;- data.frame(wx = results$a_results[[1]]$model$Wx) 
+loadsX$name &lt;- rownames(loadsX)
+
+ggplot(data = scores, aes(tx.1,ty.1)) + 
+  geom_point() + 
+  xlab(&#39;Metabolomics Score&#39;) + ylab(&#39;Microbiome Score&#39;) + 
+  stat_smooth(method = lm, se= F)</code></pre>
+<p><img src="cca_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code>ggplot(data = loadsY[order(loadsY$Rank4),],aes(x = 1:476,wy.1,fill = Rank3)) + 
+  geom_bar(stat = &#39;identity&#39;) + 
+  ggtitle(&#39;Microbiome loadings&#39;) + 
+  theme(legend.position = &#39;bottom&#39;)</code></pre>
+<p><img src="cca_files/figure-html/unnamed-chunk-2-2.png" width="672" /></p>
+<pre class="r"><code>ggplot(data = loadsX,aes(wx.1,wx.2,label = name)) + 
+  geom_point() + geom_label() + 
+  ggtitle(&#39;Metabolomics loadings&#39;) + 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)</code></pre>
+<p><img src="cca_files/figure-html/unnamed-chunk-2-3.png" width="672" /></p>
+<p>This is a nice correlation, and this model is probably a good model, slightly overfitted though, but the main concern here is that it is hard to interpret, as <em>ALL</em> the OTUs are active and further, tends to be pointing in different direction eventhough they are rather similar wrt taxonomy.</p>
+</div>
+<div id="penalized-canonical-correlation-analysis" class="section level1 unnumbered">
+<h1>Penalized Canonical Correlation Analysis</h1>
+<p>In order to circumvent this, a penalized model is produced. Two types of penalties are incorporated;</p>
 <ul>
-<li><strong>Sparsity</strong> meaning that the vast majority of the numbers in the count table is zero.</li>
-<li><strong>Compositionality</strong>. Due to the protocol only a fraction of the total DNA content is amplified, however, this amplification is assumed to be stochastic between samples, and as the same amount of DNA is thrown at the sequencer, then all samples should end up with the same number of counts. This is not the exactly the case, but differences in the so called <em>library size</em> is non informative, and the data is assumed compositional.</li>
-<li><strong>High number of variables</strong> (OTUs). Due to biology being complex and technology being sensitive, there is often a high number of different features (OTUs) from a study. These indeed refer to fine-grained information, but naturally carry statistical challenges.</li>
+<li>Sparsity - to set a fair part of the <em>not so informative</em> loadings to zero.</li>
+<li>Loading similarity for phylogentic similarity.</li>
 </ul>
-<div id="filtering-samples" class="section level1 unnumbered">
-<h1>Filtering samples</h1>
-<p>Outlying samples or samples with low quality (few sequences) should be removed up-front. The function prune_samples() in phyloseq can be used for this.</p>
-</div>
-<div id="filtering-variables" class="section level1 unnumbered">
-<h1>Filtering variables</h1>
-<p>Criterion for removing variables are usually the frequency of samples with non-zero counts. The function filter_taxa() in phyloseq can be used for this.</p>
-</div>
-<div id="normalizing-or-rarefying" class="section level1 unnumbered">
-<h1>Normalizing or rarefying</h1>
-<p>Due to inherent constitutionality within each samples, normalization or rarefaction is needed either as preprocessing or as a part of the statistical modeling.</p>
-<div id="total-sum-scaling-tss" class="section level2 unnumbered">
-<h2>Total Sum Scaling (TSS)</h2>
-<p>TSS where each count within a sample is divided by the total number of counts within the sample, is the most intuitive and straight forward method for handling differences in library size. The function transform_sample_counts() in phyloseq can be used for this.<br />
-However, due to the library size being very much dependent on often very few OTUs carrying most of the reads within a sample, the uncertainty on these few OTUs consequently inflates the entire count table. One alternative is the <em>Cumulative Sum Scaling</em> (CSS) which normalizes by the sum of the lowest <em>not so common</em> OTUs within each sample. Statistically, this sum is less uncertain, and hence less inflation of uncertainty on the entire dataset. The function phyloseq_transform_css(), an add on to phyloseq from the <a href="https://rdrr.io/github/vmikk/metagMisc/">metagMisc package</a> can be used for this.</p>
-</div>
-<div id="rarefaction" class="section level2 unnumbered">
-<h2>Rarefaction</h2>
-<p>Rarefaction is a sub sampling technique where an equal amount of reads is stochastically drawn from the total amount of sequences for each sample. Consequently the data becomes <em>exact</em> compositional, however, the sensitivity for discovery of rare / low count species is going down. The function rarefy_even_depth() in phyloseq can be used for this.</p>
-</div>
-</div>
-<div id="transformation" class="section level1 unnumbered">
-<h1>Transformation</h1>
-<p>For some upstream statistical models the data might be better served by a monotone, but non-linear, transformation. The inherent distribution, where a few OTUs carry most of the reads, means that e.g. some beta diversity metrics will naturally strongly depend on those OTUs, with the consequence that the not-so-common OTUs do not contributes to variation. One way to counteract this, is to make the larger smaller while making the smaller larger…. the sqrt() and log() transformation does exactly that. However, log(0) is -infinity and hence destroys everything. When using the log() transform a fix needs to be incorporated for instance log(x + pc) where pc is a <em>pseudo count</em>. The function transform_sample_counts() in phyloseq can be used for this.</p>
-</div>
-<div id="agglomeration" class="section level1 unnumbered">
-<h1>Agglomeration</h1>
-<p>OTU level resolution is sometimes not needed due to the biological questions manifesting at a higher taxonomic level. In such cases, all the counts within a taxonomic similar group of OTUs can be merged leading to fever features and less sparsity. The function tax_glom() in phyloseq can be used for this.</p>
-</div>
-<div id="references" class="section level1 unnumbered">
-<h1>References</h1>
-<p><a href="https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-016-0208-8">Thorsen, Jonathan, Asker Brejnrod, Martin Mortensen, Morten A. Rasmussen, Jakob Stokholm, Waleed Abu Al-Soud, Søren Sørensen, Hans Bisgaard, and Johannes Waage. <strong>Large-scale benchmarking reveals false discoveries and count transformation sensitivity in 16S rRNA gene amplicon data analysis methods used in microbiome studies</strong>, <em>Microbiome</em> 4, no. 1 (2016): 62.</a></p>
-<p><a href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1003531">McMurdie, Paul J., and Susan Holmes. <strong>Waste not, want not: why rarefying microbiome data is inadmissible</strong> <em>PLoS computational biology</em> 10, no. 4 (2014): e1003531.</a></p>
-<p><a href="http://www.nature.com/nmeth/journal/v10/n12/full/nmeth.2658.html">Paulson, Joseph N., O. Colin Stine, Héctor Corrada Bravo, and Mihai Pop. <strong>Differential abundance analysis for microbial marker-gene surveys</strong>. Nature methods 10, no. 12 (2013): 1200.</a></p>
-<p>Xia, Yinglin, Jun Sun, and Ding-Geng Chen. <strong>Statistical analysis of microbiome data with R</strong>. Springer, 2018.</p>
-</div>
-<div id="exercise" class="section level1">
-<h1><span class="header-section-number">1</span> Exercise</h1>
-<div id="library-size" class="section level2">
-<h2><span class="header-section-number">1.1</span> Library size</h2>
-<p>Draw histogram of library size</p>
-</div>
-<div id="preprocessing" class="section level2">
-<h2><span class="header-section-number">1.2</span> Preprocessing</h2>
-<p>Play around with different preprocessing techniques and collect the beta-diversity measure of the different versions. Correlate those to see what happends. Inspiration for code below. Try to change the beta-diversity measure and see what happends.</p>
-<pre class="r"><code>library(phyloseq)
-load(&#39;./data/Mice_csec.RData&#39;)
+<p>The heuristics behind a phylogentic penalty is to make OTUs which are phylogentically close also to have similar model parameters. Here, a the phylogenetic tree is represented as a similarity matrix, which can be extracted by the cophenetic.phylo() function from the library ape, and translated from distance to similarity by either cor() or exp(-distance).</p>
+<p>The sumabs argument is controling the level of sparsity for each loading vector on the input matrices respectively, such that a low value gives a more sparse model. the <strong>na</strong> argument imposes a grid from 0 (no phylogentic penalty) to 1 (alot of phylogentic penalty), resulting in just as many models.</p>
+<pre class="r"><code>fixKernelMatrix &lt;- function(P, thr = 1e-5,niter = 1000){
+  conv &lt;- 1
+  n &lt;- dim(P)[1]
+  cc &lt;- 0
+  PP &lt;- P
+  while (conv&gt;thr &amp; cc&lt;niter){
+    cc &lt;- cc+1
+    for (i in 1:n){
+      PP[i,] &lt;- P[i,] / sum(P[i,])
+      PP[,i] &lt;- P[,i] / sum(P[,i])
+    }
+    
+    conv &lt;- norm(P - PP,&#39;F&#39;)
+    P &lt;- PP
+  }
+  print(paste(&#39;Kernel Smoother updated in&#39;,cc, &#39;iterations at thr =&#39;,thr))
+  return(PP)
+}
 
-# TSS normalize
-phyXpp1 &lt;- transform_sample_counts(phyX,function(x) x / sum(x))
-# CSS normalization
-phyXpp2 &lt;- phyloseq_transform_css(phyX)  
-# rarefy
-phyXpp3 &lt;- rarefy_even_depth(phyX)
-# filter of rare OTU&#39;s
-fr &lt;- 0.5
-n &lt;- 31 # number of samples
-phyXpp4 &lt;- filter_taxa(phyX, function(x) sum(x &gt; 0)&gt;n*fr, TRUE)
 
-phyXpp5 &lt;- tax_glom(phyX, &#39;Rank6&#39;)
+D &lt;- ape::cophenetic.phylo(phy_tree(phyXpp))
+#R &lt;- cor(D)
+R &lt;- fixKernelMatrix(exp(-D))</code></pre>
+<pre><code>## [1] &quot;Kernel Smoother updated in 220 iterations at thr = 1e-05&quot;</code></pre>
+<pre class="r"><code>res_pen &lt;- pCCA(mtb,GM,R,ncomp = 2,sumabs = c(10,6), na = 10,nperm = 30)
 
-dd1 &lt;- phyloseq::distance(phyXpp1,&#39;bray&#39;)
-dd2 &lt;- phyloseq::distance(phyXpp2,&#39;bray&#39;)
-dd4 &lt;- phyloseq::distance(phyXpp3,&#39;bray&#39;)
-dd3 &lt;- phyloseq::distance(phyXpp4,&#39;bray&#39;)
-dd5 &lt;- phyloseq::distance(phyXpp5,&#39;bray&#39;)
-
-dist_df &lt;- data.frame(TSS = as.vector(dd1), 
-                      CSS = as.vector(dd2),
-                      rare = as.vector(dd3),
-                      filt = as.vector(dd4), 
-                      rank5 = as.vector(dd5))
-cor(dist_df)</code></pre>
+print(res_pen$res_df)</code></pre>
+<pre><code>##            A p_corr_cmp1 p_corr_cmp2 p_var_cmp1 p_var_cmp2
+## 1  0.0000000           0  0.00000000          0  0.0000000
+## 2  0.1111111           0  0.00000000          0  0.0000000
+## 3  0.2222222           0  0.03333333          0  0.0000000
+## 4  0.3333333           0  0.00000000          0  0.0000000
+## 5  0.4444444           0  0.00000000          0  0.0000000
+## 6  0.5555556           0  0.00000000          0  0.0000000
+## 7  0.6666667           0  0.03333333          0  0.0000000
+## 8  0.7777778           0  0.03333333          0  0.0000000
+## 9  0.8888889           0  0.03333333          0  0.1333333
+## 10 1.0000000           0  0.16666667          0  0.3666667</code></pre>
+<p>Now we take a descision on which model to use and extract it in a similar fashion as above. Resulting in the microbiome loadingplot below.</p>
 </div>
+<div id="exercises" class="section level1">
+<h1><span class="header-section-number">1</span> Exercises</h1>
+<div id="vanilla-cca" class="section level2">
+<h2><span class="header-section-number">1.1</span> Vanilla CCA</h2>
+<p>Perform the <strong>uncontrained</strong> CCA as above and reconstruct the plots</p>
+</div>
+<div id="penalized-cca" class="section level2">
+<h2><span class="header-section-number">1.2</span> Penalized CCA</h2>
+<p>Try build a penalized version with two components, no sparsity for the metabolites but some sparsity for the microbiome. Screen a grid of phylo-penalities and decide which model to use, extract and plot it.</p>
+</div>
+</div>
+<div id="references" class="section level1">
+<h1><span class="header-section-number">2</span> References</h1>
 </div>
 
 

@@ -11,7 +11,7 @@
 
 
 
-<title>Preprocessing</title>
+<title>Heatmaps</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -347,91 +347,81 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Preprocessing</h1>
+<h1 class="title toc-ignore">Heatmaps</h1>
 
 </div>
 
 
-<p>Why should the data be preprocessed?</p>
-<p>For amplicon sequencing type of data, like 16S, there is in general three inherent characteristics of the count table:</p>
-<ul>
-<li><strong>Sparsity</strong> meaning that the vast majority of the numbers in the count table is zero.</li>
-<li><strong>Compositionality</strong>. Due to the protocol only a fraction of the total DNA content is amplified, however, this amplification is assumed to be stochastic between samples, and as the same amount of DNA is thrown at the sequencer, then all samples should end up with the same number of counts. This is not the exactly the case, but differences in the so called <em>library size</em> is non informative, and the data is assumed compositional.</li>
-<li><strong>High number of variables</strong> (OTUs). Due to biology being complex and technology being sensitive, there is often a high number of different features (OTUs) from a study. These indeed refer to fine-grained information, but naturally carry statistical challenges.</li>
-</ul>
-<div id="filtering-samples" class="section level1 unnumbered">
-<h1>Filtering samples</h1>
-<p>Outlying samples or samples with low quality (few sequences) should be removed up-front. The function prune_samples() in phyloseq can be used for this.</p>
-</div>
-<div id="filtering-variables" class="section level1 unnumbered">
-<h1>Filtering variables</h1>
-<p>Criterion for removing variables are usually the frequency of samples with non-zero counts. The function filter_taxa() in phyloseq can be used for this.</p>
-</div>
-<div id="normalizing-or-rarefying" class="section level1 unnumbered">
-<h1>Normalizing or rarefying</h1>
-<p>Due to inherent constitutionality within each samples, normalization or rarefaction is needed either as preprocessing or as a part of the statistical modeling.</p>
-<div id="total-sum-scaling-tss" class="section level2 unnumbered">
-<h2>Total Sum Scaling (TSS)</h2>
-<p>TSS where each count within a sample is divided by the total number of counts within the sample, is the most intuitive and straight forward method for handling differences in library size. The function transform_sample_counts() in phyloseq can be used for this.<br />
-However, due to the library size being very much dependent on often very few OTUs carrying most of the reads within a sample, the uncertainty on these few OTUs consequently inflates the entire count table. One alternative is the <em>Cumulative Sum Scaling</em> (CSS) which normalizes by the sum of the lowest <em>not so common</em> OTUs within each sample. Statistically, this sum is less uncertain, and hence less inflation of uncertainty on the entire dataset. The function phyloseq_transform_css(), an add on to phyloseq from the <a href="https://rdrr.io/github/vmikk/metagMisc/">metagMisc package</a> can be used for this.</p>
-</div>
-<div id="rarefaction" class="section level2 unnumbered">
-<h2>Rarefaction</h2>
-<p>Rarefaction is a sub sampling technique where an equal amount of reads is stochastically drawn from the total amount of sequences for each sample. Consequently the data becomes <em>exact</em> compositional, however, the sensitivity for discovery of rare / low count species is going down. The function rarefy_even_depth() in phyloseq can be used for this.</p>
-</div>
-</div>
-<div id="transformation" class="section level1 unnumbered">
-<h1>Transformation</h1>
-<p>For some upstream statistical models the data might be better served by a monotone, but non-linear, transformation. The inherent distribution, where a few OTUs carry most of the reads, means that e.g. some beta diversity metrics will naturally strongly depend on those OTUs, with the consequence that the not-so-common OTUs do not contributes to variation. One way to counteract this, is to make the larger smaller while making the smaller larger…. the sqrt() and log() transformation does exactly that. However, log(0) is -infinity and hence destroys everything. When using the log() transform a fix needs to be incorporated for instance log(x + pc) where pc is a <em>pseudo count</em>. The function transform_sample_counts() in phyloseq can be used for this.</p>
-</div>
-<div id="agglomeration" class="section level1 unnumbered">
-<h1>Agglomeration</h1>
-<p>OTU level resolution is sometimes not needed due to the biological questions manifesting at a higher taxonomic level. In such cases, all the counts within a taxonomic similar group of OTUs can be merged leading to fever features and less sparsity. The function tax_glom() in phyloseq can be used for this.</p>
-</div>
-<div id="references" class="section level1 unnumbered">
-<h1>References</h1>
-<p><a href="https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-016-0208-8">Thorsen, Jonathan, Asker Brejnrod, Martin Mortensen, Morten A. Rasmussen, Jakob Stokholm, Waleed Abu Al-Soud, Søren Sørensen, Hans Bisgaard, and Johannes Waage. <strong>Large-scale benchmarking reveals false discoveries and count transformation sensitivity in 16S rRNA gene amplicon data analysis methods used in microbiome studies</strong>, <em>Microbiome</em> 4, no. 1 (2016): 62.</a></p>
-<p><a href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1003531">McMurdie, Paul J., and Susan Holmes. <strong>Waste not, want not: why rarefying microbiome data is inadmissible</strong> <em>PLoS computational biology</em> 10, no. 4 (2014): e1003531.</a></p>
-<p><a href="http://www.nature.com/nmeth/journal/v10/n12/full/nmeth.2658.html">Paulson, Joseph N., O. Colin Stine, Héctor Corrada Bravo, and Mihai Pop. <strong>Differential abundance analysis for microbial marker-gene surveys</strong>. Nature methods 10, no. 12 (2013): 1200.</a></p>
-<p>Xia, Yinglin, Jun Sun, and Ding-Geng Chen. <strong>Statistical analysis of microbiome data with R</strong>. Springer, 2018.</p>
-</div>
-<div id="exercise" class="section level1">
-<h1><span class="header-section-number">1</span> Exercise</h1>
-<div id="library-size" class="section level2">
-<h2><span class="header-section-number">1.1</span> Library size</h2>
-<p>Draw histogram of library size</p>
-</div>
-<div id="preprocessing" class="section level2">
-<h2><span class="header-section-number">1.2</span> Preprocessing</h2>
-<p>Play around with different preprocessing techniques and collect the beta-diversity measure of the different versions. Correlate those to see what happends. Inspiration for code below. Try to change the beta-diversity measure and see what happends.</p>
+<p>In order to answer biological questions, often a combination of high-throughput data is generated. Especially in combination with microbiome types of data, the associated metabolome is naturally of interest, as these two sources together reflects <em>who are there</em> and <em>what do they do</em>.</p>
+<p>In the analysis of such data a natural starting point is to look for common structure. That is; which types of bacteria are correlated to a certain type of metabolites.</p>
+<div id="correlation-heat-map" class="section level1 unnumbered">
+<h1>Correlation Heat map</h1>
+<p>A natural starting point for such an analysis is to produce all pairwise correlations between the OTU table and the metabolite table, and visualize it in a heat map. The build in heatmap() function in R provides a quick initial overview of the data.</p>
+<div id="preprocess-the-data" class="section level2 unnumbered">
+<h2>Preprocess the data</h2>
 <pre class="r"><code>library(phyloseq)
-load(&#39;./data/Mice_csec.RData&#39;)
+library(tidyverse)
+load(&#39;./data/Rats_inulin.RData&#39;)
 
-# TSS normalize
-phyXpp1 &lt;- transform_sample_counts(phyX,function(x) x / sum(x))
-# CSS normalization
-phyXpp2 &lt;- phyloseq_transform_css(phyX)  
-# rarefy
-phyXpp3 &lt;- rarefy_even_depth(phyX)
-# filter of rare OTU&#39;s
-fr &lt;- 0.5
-n &lt;- 31 # number of samples
-phyXpp4 &lt;- filter_taxa(phyX, function(x) sum(x &gt; 0)&gt;n*fr, TRUE)
+phyXpp &lt;- subset_samples(phyX, !is.na(Acetate))
+phyXpp &lt;- filter_taxa(phyXpp, function(x) sum(x&gt;0)&gt;0, TRUE)
+phyXpp &lt;- transform_sample_counts(phyXpp, function(x) x/sum(x))
 
-phyXpp5 &lt;- tax_glom(phyX, &#39;Rank6&#39;)
+OTUtb &lt;- data.frame(t(otu_table(phyXpp)))
 
-dd1 &lt;- phyloseq::distance(phyXpp1,&#39;bray&#39;)
-dd2 &lt;- phyloseq::distance(phyXpp2,&#39;bray&#39;)
-dd4 &lt;- phyloseq::distance(phyXpp3,&#39;bray&#39;)
-dd3 &lt;- phyloseq::distance(phyXpp4,&#39;bray&#39;)
-dd5 &lt;- phyloseq::distance(phyXpp5,&#39;bray&#39;)
 
-dist_df &lt;- data.frame(TSS = as.vector(dd1), 
-                      CSS = as.vector(dd2),
-                      rare = as.vector(dd3),
-                      filt = as.vector(dd4), 
-                      rank5 = as.vector(dd5))
-cor(dist_df)</code></pre>
+Mtb &lt;- sample_data(phyXpp)[,c(&quot;Acetate&quot;,&quot;Butyrate&quot;,&quot;Fructose&quot;,&quot;Glucose&quot;,&quot;Lactate&quot;,&quot;Propionate&quot;,&quot;Xylose&quot;)]
+# preprocess the Mtb data
+Mtb$Xylose &lt;- Mtb$Xylose + 0.141/2 # there is zeros for this one - so to fix log we need to add a bit. 
+Mtb &lt;- log(Mtb)</code></pre>
+</div>
+<div id="pairwise-correlations" class="section level2 unnumbered">
+<h2>Pairwise correlations</h2>
+<p>Compute all pairwise correlations</p>
+<pre class="r"><code>cr &lt;- cor(OTUtb,Mtb)</code></pre>
+</div>
+<div id="visualize" class="section level2 unnumbered">
+<h2>Visualize</h2>
+<pre class="r"><code>heatmap(cr)</code></pre>
+<p><img src="hm_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>The ordering of the coloumns and rows for this heatmap is based on correlations structure of the <em>correlation matrix</em>. I.e. it is <em>NOT</em> based on similarity of OTUs and metabolites respectively. This might lead to a wrong interpretation. So instead the dendrograms for the rows is based on the correlations of the OTUs and the dendrogram for the coloumns are based on the correlations of the metabolites.</p>
+<pre class="r"><code>rd&lt;-dist(t(OTUtb))
+rc&lt;-hclust(rd)
+
+cd&lt;-dist(t(Mtb))
+cc&lt;-hclust(cd)
+
+heatmap(cr, Rowv=as.dendrogram(rc), Colv=as.dendrogram(cc))</code></pre>
+<p><img src="hm_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+</div>
+</div>
+<div id="exercises" class="section level1">
+<h1><span class="header-section-number">1</span> Exercises</h1>
+<div id="heatmaps" class="section level2">
+<h2><span class="header-section-number">1.1</span> Heatmaps</h2>
+<p>Import and run the codes above for generating heatmaps</p>
+</div>
+<div id="labels" class="section level2">
+<h2><span class="header-section-number">1.2</span> Labels</h2>
+<p>You might want to change the labels for the bacteria to something more intuitive, and furhter export the plot to pdf for zooming. Try to do this and answer whether you see structure in relation to taxonomic level.</p>
+<pre class="r"><code>Txtb &lt;- data.frame(tax_table(phyX))
+colnames(OTUtb) &lt;- Txtb$Rank5 # use Rank5 as labels</code></pre>
+</div>
+<div id="effect-of-preprocessing" class="section level2">
+<h2><span class="header-section-number">1.3</span> Effect of Preprocessing</h2>
+<p>Try to change the preprocessing such as adding log tranform, and plot histograms of the two versions of the obtained correlations. What do you see?</p>
+</div>
+<div id="a-zoom-in" class="section level2">
+<h2><span class="header-section-number">1.4</span> A zoom-in!</h2>
+<p>Digg out OTU_154 and Acetate and plot those against each other. Add log-tranform with a pseudo-count and see what happends. try to add diet info… does that explain anything?</p>
+<pre class="r"><code>phyXsel &lt;- subset_samples(phyX, !is.na(Acetate))
+OTUsel &lt;- data.frame(t(otu_table(phyXsel)))
+df &lt;- cbind(OTUsel,Mtb)
+
+g1 &lt;- ggplot(data = df, aes(OTU_154,Acetate)) + geom_point() + stat_smooth(method = lm) + ggtitle(&#39;raw&#39;)
+g2 &lt;- ggplot(data = df, aes(log2(OTU_154 + 0.1),Acetate)) + geom_point() + stat_smooth(method = lm) + ggtitle(&#39;log(count + pc)&#39;)
+gridExtra::grid.arrange(g1,g2, nrow = 1)</code></pre>
+<p>What do you learn from this? … Should be a kinda scarry insight!</p>
 </div>
 </div>
 

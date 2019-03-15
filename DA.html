@@ -289,7 +289,7 @@ $(document).ready(function () {
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="import.html">Import</a>
+      <a href="pkgs.html">Packages</a>
     </li>
     <li>
       <a href="prepro.html">Preprocessing</a>
@@ -325,7 +325,7 @@ $(document).ready(function () {
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="phyloplsda.html">phylo-PLSDA</a>
+      <a href="hm.html">Heatmaps</a>
     </li>
     <li>
       <a href="cca.html">Canonical Correlation Analysis</a>
@@ -372,134 +372,67 @@ $(document).ready(function () {
 <p>The paper by Thorsen et al 2016 investigates a range of statistical strategies on both the ability to sort the OTUs from the most discriminatory to the least, as well as the false discovery rate control. Russel et al (2019) have streamlined this approach for selecting the relevant statistical engine, which nicely screens +20 methods in very few lines of code (see <a href="https://github.com/Russel88/DAtest">DAtest</a> for code)</p>
 <p>(see refs below)</p>
 <div id="exercise" class="section level1">
-<h1>Exercise</h1>
-<ul>
-<li><p>Rarefy the <em>mice birth mode</em> data to even depth, and use the phyloseq_to_deseq2() function to convert format including birht mode as class information.</p></li>
-<li><p>Perform DA test using DESeq() from the DESeq2 library. You might need to install this library in advance.</p></li>
-<li><p>Extract results and combine with tax information (from tax_table()) as well as read frequency per OTU as well as presence/absence percentage.</p></li>
-<li><p>Plot a histogram of the unadjusted p-values. How should this plot look like if there were <em>no</em> birth mode information in the data?</p></li>
-<li><p>Plot a vulcano plot of the results. Try to facet out / or color according to a taxonomic level to get deeper insight on which bacteria that are affected the most.</p></li>
-<li><p>Interpret the results as a function of read-frequency or presence/absence. Is it the dominating species that are most different?</p></li>
-<li><p>Perform tax glommeration (tax_glom()) at some taxonomic level, and re-run the analysis. Do you get the same results?</p></li>
-<li><p>Do exactly the same just using wilcox tests as well as metagenomeseq’s featureModel() and compare the results?</p></li>
-</ul>
-<pre class="r"><code>library(phyloseq)
-library(ggplot2)
-library(DESeq2)
-load(&#39;./data/Mice_csec.RData&#39;)
+<h1><span class="header-section-number">1</span> Exercise</h1>
+<div id="setting-up-data" class="section level2">
+<h2><span class="header-section-number">1.1</span> Setting up data</h2>
+<p>Rarefy the <em>mice birth mode</em> data to even depth, and use the phyloseq_to_deseq2() function to convert format including birht mode as class information.</p>
+</div>
+<div id="deseq" class="section level2">
+<h2><span class="header-section-number">1.2</span> DEseq</h2>
+<p>Perform DA test using DESeq() from the DESeq2 library. You might need to install this library in advance.</p>
+<pre class="r"><code>birhtmode_ds &lt;- phyloseq_to_deseq2(phyX, ~ Birth_mode)
 
-# initial pp
-phyX &lt;- rarefy_even_depth(phyX)
-
-birhtmode_ds &lt;- phyloseq_to_deseq2(phyX, ~ Birth_mode)
-res &lt;- DESeq(birhtmode_ds, test=&quot;Wald&quot;, fitType=&quot;parametric&quot;)
-
-# prepare data
-tb &lt;- results(res, cooksCutoff = FALSE)
+res &lt;- DESeq(birhtmode_ds, test=&quot;Wald&quot;, fitType=&quot;parametric&quot;)</code></pre>
+</div>
+<div id="interpret-results" class="section level2">
+<h2><span class="header-section-number">1.3</span> Interpret results</h2>
+<p>Extract results and combine with tax information (from tax_table()) as well as read frequency per OTU as well as presence/absence percentage.</p>
+<pre class="r"><code>tb &lt;- results(res, cooksCutoff = FALSE)
 txtb &lt;- data.frame(tax_table(phyX))
-df &lt;- data.frame(est = tb$log2FoldChange, se = tb$lfcSE, pv = tb$pvalue, pvadj = tb$padj)
-df &lt;- cbind(df, txtb)
-df$name &lt;- rownames(df)
 
-# p-value histogram
-hist(tb$pvalue,40)
-# How should this look if there were no information in data? 
+abu &lt;- taxa_sums(phyX)
+presence &lt;- apply(otu_table(phyX)&gt;0,1,sum)
 
-# vulcano plot
-ggplot(data = df, aes(est,-log10(pv), color = Rank4)) + 
+df_res &lt;- data.frame(est = tb$log2FoldChange, se = tb$lfcSE, pv = tb$pvalue, pvadj = tb$padj, abu, presence)
+df_res &lt;- cbind(df_res, txtb)
+df_res$name &lt;- rownames(df_res)</code></pre>
+</div>
+<div id="is-this-different-from-null" class="section level2">
+<h2><span class="header-section-number">1.4</span> Is this different from <em>null</em>?</h2>
+<p>Plot a histogram of the unadjusted p-values. How should this plot look like if there were <em>no</em> birth mode information in the data?</p>
+</div>
+<div id="vulcano-plot" class="section level2">
+<h2><span class="header-section-number">1.5</span> Vulcano plot</h2>
+<p>Plot a vulcano plot of the results. Try to facet out / or color according to a taxonomic level to get deeper insight on which bacteria that are affected the most.</p>
+<pre class="r"><code>ggplot(data = df_res, aes(est,-log10(pv), color = Rank4)) + 
   geom_point() + 
-  geom_text(data = df[df$pv&lt;0.0001,], aes(label = name), color = &#39;black&#39;) + # put label on the top stuff
+  geom_text(data = df_res[df_res$pv&lt;0.0001,], aes(label = name), color = &#39;black&#39;) + # put label on the top stuff
   theme(legend.position = &#39;none&#39;) + 
-  facet_wrap(~Rank3)
-
-# table of the most interesting discoveries
-head(df[order(df$pv),], 30)
-
-# add data derived tax information such as number of samples with presence and frequency of reads and interpret data using this information.  
-n &lt;- 31
-tax_info &lt;- data.frame(prc_reads = 100*taxa_sums(phyX) / sum(taxa_sums(phyX)), 
-                       presence = 100*apply(otu_table(phyX)&gt;0,1,sum) / n)
-df &lt;- cbind(df, tax_info)
-
-ggplot(data = df, aes(presence, -log10(pv))) + geom_point() + stat_smooth() + scale_x_log10()
-
-ggplot(data = df, aes(est,-log10(pv), color = Rank4)) + 
-  geom_point() + 
-  geom_text(data = df[df$pv&lt;0.0001,], aes(label = name), color = &#39;black&#39;) + # put label on the top stuff
-  theme(legend.position = &#39;none&#39;) + 
-  facet_wrap(~prc_reads&gt;.5)
-
-
-
-# try to tax glommarate and look at the top discoveries from this analysis. Is there consistency between the results? 
-
-phyXr5 &lt;- tax_glom(phyX,&#39;Rank5&#39;)
-
-birhtmode_ds &lt;- phyloseq_to_deseq2(phyXr5, ~ Birth_mode)
-res &lt;- DESeq(birhtmode_ds, test=&quot;Wald&quot;, fitType=&quot;parametric&quot;)
-
-# prepare data
-tb &lt;- results(res, cooksCutoff = FALSE)
-txtb &lt;- data.frame(tax_table(phyXr5)[,1:5])
-df &lt;- data.frame(est = tb$log2FoldChange, se = tb$lfcSE, pv = tb$pvalue, pvadj = tb$padj)
-df &lt;- cbind(df, txtb)
-df$name &lt;- rownames(df)
-
-# p-value histogram
-hist(tb$pvalue,40)
-# How should this look if there were no information in data? 
-
-# vulcano plot
-ggplot(data = df, aes(est,-log10(pv), color = Rank4)) + 
-  geom_point() + 
-  geom_text(data = df[df$pv&lt;0.0001,], aes(label = name), color = &#39;black&#39;) + # put label on the top stuff
-  theme(legend.position = &#39;none&#39;)
-
-# table of the most interesting discoveries
-head(df[order(df$pv),], 30)
-
-ggplot(data = df, aes(est,-log10(pv), color = Rank4)) + 
-  geom_point() + 
-  geom_text(data = df[df$pv&lt;0.0001,], aes(label = Rank5), color = &#39;black&#39;) + # put label on the top stuff
-  theme(legend.position = &#39;none&#39;)</code></pre>
-<pre class="r"><code>library(phyloseq)
-library(ggplot2)
-library(DESeq2)
-library(metagenomeSeq)
-load(&#39;./data/Mice_csec.RData&#39;)
-
-# initial pp
-phyX &lt;- rarefy_even_depth(phyX)
-
-birhtmode_ds &lt;- phyloseq_to_deseq2(phyX, ~ Birth_mode)
-res &lt;- DESeq(birhtmode_ds, test=&quot;Wald&quot;, fitType=&quot;parametric&quot;)
-tb &lt;- results(res, cooksCutoff = FALSE)
-
-mgsdata &lt;- phyloseq_to_metagenomeSeq(phyX)
+  facet_wrap(~Rank3)</code></pre>
+</div>
+<div id="rarecommon-vs-difference" class="section level2">
+<h2><span class="header-section-number">1.6</span> rare/common vs difference</h2>
+<p>Interpret the results as a function of read-frequency or presence/absence. Is it the dominating species that are most different?</p>
+</div>
+<div id="effect-of-agglomoration" class="section level2">
+<h2><span class="header-section-number">1.7</span> Effect of agglomoration</h2>
+<p>Perform tax glommeration (tax_glom()) at some taxonomic level, and re-run the analysis. Do you get the same results?</p>
+</div>
+<div id="metagenomeseq" class="section level2">
+<h2><span class="header-section-number">1.8</span> Metagenomeseq</h2>
+<p>Do exactly the same just using t-test, wilcox tests as well as metagenomeseq’s featureModel() and compare the results? Below are some code-inspiration.</p>
+<pre class="r"><code>mgsdata &lt;- phyloseq_to_metagenomeSeq(phyX)
 mgsdata &lt;- cumNorm(mgsdata, p=.5)
 mod &lt;- model.matrix(~1+Birth_mode, data=pData(mgsdata))
 mgsfit &lt;- fitFeatureModel(obj = mgsdata,mod = mod)
 
-
 predictor &lt;- sample_data(phyX)$Birth_mode
 count_table &lt;- log(t(otu_table(phyX)) + 1)
 count_table &lt;- apply(count_table, 2, function(x) x/sum(x))
-pv_t &lt;- apply(count_table, 2,function(x) t.test(x ~ predictor)$p.value)
-
-
-
-# prepare data
-txtb &lt;- data.frame(tax_table(phyX))
-
-df &lt;- data.frame(est_DESeq = tb$log2FoldChange, se_DESeq = tb$lfcSE, pv_DESeq = tb$pvalue, pvadj_DESeq = tb$padj, 
-                 est_MGS = mgsfit$fitZeroLogNormal$logFC, se_MGS = mgsfit$fitZeroLogNormal$se, 
-                 pv_MGS = mgsfit$pvalues, 
-                 pv_tt = pv_t)
-df &lt;- cbind(df, txtb)
-df$name &lt;- rownames(df)
-ggplot(data = df, aes(pv_DESeq, pv_MGS)) + geom_point() + scale_y_log10() + scale_x_log10()</code></pre>
+pv_t &lt;- apply(count_table, 2,function(x) t.test(x ~ predictor)$p.value)</code></pre>
 </div>
-<div id="references" class="section level1">
+</div>
+<div id="references" class="section level1 unnumbered">
 <h1>References</h1>
 <p><a href="https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-016-0208-8">Thorsen, Jonathan, Asker Brejnrod, Martin Mortensen, Morten A. Rasmussen, Jakob Stokholm, Waleed Abu Al-Soud, Søren Sørensen, Hans Bisgaard, and Johannes Waage. <strong>Large-scale benchmarking reveals false discoveries and count transformation sensitivity in 16S rRNA gene amplicon data analysis methods used in microbiome studies</strong>, <em>Microbiome</em> 4, no. 1 (2016): 62.</a></p>
 <p><a href="http://www.nature.com/nmeth/journal/v10/n12/full/nmeth.2658.html">Paulson, Joseph N., O. Colin Stine, Héctor Corrada Bravo, and Mihai Pop. <strong>Differential abundance analysis for microbial marker-gene surveys</strong>. Nature methods 10, no. 12 (2013): 1200.</a></p>

@@ -289,7 +289,7 @@ $(document).ready(function () {
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="import.html">Import</a>
+      <a href="pkgs.html">Packages</a>
     </li>
     <li>
       <a href="prepro.html">Preprocessing</a>
@@ -325,7 +325,7 @@ $(document).ready(function () {
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="phyloplsda.html">phylo-PLSDA</a>
+      <a href="hm.html">Heatmaps</a>
     </li>
     <li>
       <a href="cca.html">Canonical Correlation Analysis</a>
@@ -365,7 +365,8 @@ pre.redcars {
 </style>
 <p>For each sample a single measure can be calculated describing the diversity within the sample. The most intuitive is <em>how many different bacteria (OTUs) is observed</em>. But there are others. The phyloseq package with the function plot_richness() supports seven different versions.</p>
 <p>These can easily be calculated and visualized according to a given design.</p>
-<pre class="r"><code>library(phyloseq)
+<pre class="r"><code>library(ggplot2)
+library(phyloseq)
 load(&#39;./data/Mice_csec.RData&#39;)
 
 pp &lt;- plot_richness(phyX)
@@ -381,11 +382,14 @@ ggplot(data = AlphaD, aes(Birth_mode, value, fill = Birth_mode)) +
 <p>Shannon diversity is a metric with relatively high dependency on rare OTUs. <em>Simpson</em> diversity (and <em>Inverse Simpson</em>) depends on the even-ness of the observed OTUs in the samples and is hence relatively independent on rare species, as is obvious from the mathematical formula. All three measures seems to be related to birth mode.</p>
 <p>In order to get more hands-on experience with alpha diversity and especially how different preprocessing techniques influences these metrics, the exercise below show case how inherient the stocastisity of the sequencing depth is in the data.</p>
 <div id="exercise" class="section level1">
-<h1>Exercise</h1>
-<ul>
-<li><p>Rerun the above alpha diversity analysis with no preprocessing of the data</p></li>
-<li><p>Compare each measure of alpha diversity with the library size (number of reads per sample). What is problematic? (You can take inspiration in the code below on how to do this in R)</p></li>
-</ul>
+<h1><span class="header-section-number">1</span> Exercise</h1>
+<div id="with-no-prepro" class="section level2">
+<h2><span class="header-section-number">1.1</span> With No prepro</h2>
+<p>Rerun the above alpha diversity analysis with no preprocessing of the data</p>
+</div>
+<div id="alpha-vs-library-size" class="section level2">
+<h2><span class="header-section-number">1.2</span> Alpha vs library size</h2>
+<p>Compare each measure of alpha diversity with the library size (number of reads per sample). What is problematic? (You can take inspiration in the code below on how to do this in R)</p>
 <pre class="r"><code>libsize &lt;- data.frame(libsize = apply(otu_table(phyX),2,sum))
 
 # merge
@@ -397,21 +401,24 @@ ggplot(data = AlphaD, aes(libsize,value)) +
   stat_smooth(method = lm) + 
   facet_wrap(~variable, scales = &#39;free&#39;)</code></pre>
 <p>Two preprocessing techniques are investigated in terms their ability to remove the dependency on the library size. Namely rarefaction and OTU-filtering.</p>
-<ul>
-<li>Rarefy the sample to even depth, and calculate the corresponding alpha diversity measures</li>
-</ul>
+</div>
+<div id="rarefy" class="section level2">
+<h2><span class="header-section-number">1.3</span> Rarefy</h2>
+<p>Rarefy the sample to even depth, and calculate the corresponding alpha diversity measures</p>
 <pre class="r"><code>phyXrare &lt;- rarefy_even_depth(phyX)
 AlphaDrare &lt;- plot_richness(phyXrare)$data</code></pre>
-<ul>
-<li>Merge with the <strong>original library size</strong> and check if you had succes.</li>
-</ul>
+</div>
+<div id="does-it-work" class="section level2">
+<h2><span class="header-section-number">1.4</span> Does it work?</h2>
+<p>Merge with the <strong>original library size</strong> and check if you had succes.</p>
 <pre class="r"><code>AlphaDrare$X.SampleID &lt;- as.character(trimws(AlphaDrare$X.SampleID))
 AlphaDrare &lt;- merge(AlphaDrare, libsize, by.x = &#39;X.SampleID&#39;, by.y = &#39;row.names&#39;)
 
 ggplot(data = AlphaDrare, aes(....)) + </code></pre>
-<ul>
-<li>Now try to use a filter that removes rare taxa</li>
-</ul>
+</div>
+<div id="filter-of-rare-taxa" class="section level2">
+<h2><span class="header-section-number">1.5</span> Filter of rare taxa</h2>
+<p>Now try to use a filter that removes rare taxa</p>
 <pre class="r"><code>phyXfilt &lt;- filter_taxa(phyX,function(x) sum(x&gt;0) &gt; ??? , TRUE)
 
 AlphaDfilt &lt;- plot_richness(phyXfilt)$data
@@ -420,7 +427,8 @@ AlphaDfilt &lt;- merge(AlphaDfilt, libsize, by.x = &#39;X.SampleID&#39;, by.y = 
 ggplot(data = AlphaDfilt, aes(...)) + </code></pre>
 <p>What you have learned here is that sequencing depth - and its variation between samples - inheriently affects data analysis. Preprocessing is capable of handling these issues, but <strong>only to some extend</strong>.</p>
 </div>
-<div id="references" class="section level1">
+</div>
+<div id="references" class="section level1 unnumbered">
 <h1>References</h1>
 <p>Xia, Yinglin, Jun Sun, and Ding-Geng Chen. <strong>Statistical analysis of microbiome data with R</strong>. Springer, 2018. Chapter 6.</p>
 </div>
