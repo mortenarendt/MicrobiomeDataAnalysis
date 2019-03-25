@@ -281,6 +281,9 @@ $(document).ready(function () {
         <li>
   <a href="about.html">Home</a>
 </li>
+<li>
+  <a href="pkgs.html">Installation</a>
+</li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
     Descriptives
@@ -288,9 +291,6 @@ $(document).ready(function () {
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-    <li>
-      <a href="pkgs.html">Packages</a>
-    </li>
     <li>
       <a href="prepro.html">Preprocessing</a>
     </li>
@@ -372,15 +372,16 @@ $(document).ready(function () {
 <pre class="r"><code>library(vegan)
 library(phyloseq)
 load(&#39;./data/Rats_inulin.RData&#39;)
+phyX &lt;- transform_sample_counts(phyX, function(x) x  / sum(x))
 D_BC &lt;- phyloseq::distance(phyX, &quot;bray&quot;)
 as.matrix(D_BC)[1:3,1:3]</code></pre>
 <pre><code>##                    NXT005.REB.002.S92 NXT005.REB.003.S93
-## NXT005.REB.002.S92          0.0000000          0.3826576
-## NXT005.REB.003.S93          0.3826576          0.0000000
-## NXT005.REB.004.S94          0.4892783          0.3484405
+## NXT005.REB.002.S92          0.0000000          0.3709460
+## NXT005.REB.003.S93          0.3709460          0.0000000
+## NXT005.REB.004.S94          0.5029163          0.3448253
 ##                    NXT005.REB.004.S94
-## NXT005.REB.002.S92          0.4892783
-## NXT005.REB.003.S93          0.3484405
+## NXT005.REB.002.S92          0.5029163
+## NXT005.REB.003.S93          0.3448253
 ## NXT005.REB.004.S94          0.0000000</code></pre>
 <p>The diagonal is zeros. Although the formulations above works on <em>similarity matrices</em> the adonis() function takes <em>dissimilarities</em> as input.</p>
 <p>Here is a linear model depending on the factor time:</p>
@@ -395,9 +396,9 @@ as.matrix(D_BC)[1:3,1:3]</code></pre>
 ## Terms added sequentially (first to last)
 ## 
 ##           Df SumsOfSqs MeanSqs F.Model      R2 Pr(&gt;F)    
-## time       1    3.2052  3.2052  18.834 0.24835  0.001 ***
-## Residuals 57    9.7007  0.1702         0.75165           
-## Total     58   12.9060                 1.00000           
+## time       1    3.5067  3.5067  24.448 0.30017  0.001 ***
+## Residuals 57    8.1759  0.1434         0.69983           
+## Total     58   11.6826                 1.00000           
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
 <p>However, more interestingly it is to compare the effect of diet in combination with time</p>
@@ -413,11 +414,11 @@ mdl</code></pre>
 ## Terms added sequentially (first to last)
 ## 
 ##                  Df SumsOfSqs MeanSqs F.Model      R2 Pr(&gt;F)    
-## time              1    3.2052  3.2052 23.7182 0.24835  0.001 ***
-## Description       2    1.1981  0.5990  4.4329 0.09283  0.001 ***
-## time:Description  2    1.3403  0.6702  4.9591 0.10385  0.001 ***
-## Residuals        53    7.1623  0.1351         0.55496           
-## Total            58   12.9060                 1.00000           
+## time              1    3.5067  3.5067  33.416 0.30017  0.001 ***
+## Description       2    1.2606  0.6303   6.006 0.10790  0.001 ***
+## time:Description  2    1.3535  0.6767   6.449 0.11585  0.001 ***
+## Residuals        53    5.5618  0.1049         0.47608           
+## Total            58   11.6826                 1.00000           
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
 <pre class="r"><code>SSQ &lt;- mdl$aov.tab$SumsOfSqs
@@ -436,22 +437,22 @@ knitr::kable(tbanova,digits = c(0,1,5))</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">time</td>
-<td align="right">24.8</td>
+<td align="right">30.0</td>
 <td align="right">0.001</td>
 </tr>
 <tr class="even">
 <td align="left">Description</td>
-<td align="right">9.3</td>
+<td align="right">10.8</td>
 <td align="right">0.001</td>
 </tr>
 <tr class="odd">
 <td align="left">time:Description</td>
-<td align="right">10.4</td>
+<td align="right">11.6</td>
 <td align="right">0.001</td>
 </tr>
 <tr class="even">
 <td align="left">Residuals</td>
-<td align="right">55.5</td>
+<td align="right">47.6</td>
 <td align="right"></td>
 </tr>
 <tr class="odd">
@@ -477,12 +478,67 @@ knitr::kable(tbanova,digits = c(0,1,5))</code></pre>
 <h2><span class="header-section-number">1.3</span> Differences at baseline?</h2>
 <p>At time <em>start</em> no dietarry intervention has been introduced, and hence, no differences between diet-groups are expected. Test if this is the case.</p>
 </div>
+<div id="differences-at-end-depending-on-diet" class="section level2">
+<h2><span class="header-section-number">1.4</span> Differences at end depending on diet?</h2>
+<p>At time <em>slut</em> we want to see if the dietary intervention made a difference. Specify data, ordinate and plot, and model for such an analysis.</p>
+</div>
+<div id="make-all-three-pairwise-comparisons" class="section level2">
+<h2><span class="header-section-number">1.5</span> Make all three pairwise comparisons</h2>
+<p>Seems like there is a lot of difference due to diet, but which group is most different? Are there any difference between the two sausage-based diets? HINT: Below some code for inspiration. But it is stripped for preprocessing! That you need to do your self!</p>
+<pre class="r"><code>phyXss &lt;- subset_samples(phyX, time==&#39;Slut&#39;)
+models &lt;- list()
+comparison &lt;- vector()
+c &lt;- 0
+for (j in unique(data.frame(sample_data(phyXss))$Description)){
+  c &lt;- c+1
+  phyXssj &lt;- subset_samples(phyXss,df$Description!=j)
+  D_BC &lt;- phyloseq::distance(phyXssj, &quot;bray&quot;)
+  models[[c]] &lt;- adonis(D_BC ~ Description, data = data.frame(sample_data(phyXssj)))
+  comparison[c] &lt;- paste(&#39;Not with&#39;, j)
+}</code></pre>
+</div>
+<div id="which-family-carries-the-differences" class="section level2">
+<h2><span class="header-section-number">1.6</span> Which family carries the differences?</h2>
+<p>In order to investigate for which taxonomic family the differences are more pronounced, try to subset taxa based on family (Rank5) on for families with at least a few OTUs. Do that for all families, run the model and collect results. HINT: some code below for inspiration, but please make sure you understand what goes on in each step!</p>
+<pre class="r"><code>r5 &lt;- data.frame(tax_table(phyXss))$Rank5
+tb_r5 &lt;- table(r5)
+results &lt;- data.frame()
+for (j in names(tb_r5[tb_r5&gt;3])){
+  print(j)
+  ic &lt;- r5==j &amp; !is.na(r5)
+  phyXssj &lt;- subset_taxa(phyXss,ic)
+  phyXssj &lt;- subset_samples(phyXssj, sample_sums(phyXssj)&gt;0)
+  D_BC &lt;- phyloseq::distance(phyXssj, &quot;bray&quot;)
+  mdl &lt;- adonis(D_BC ~ Description, data = data.frame(sample_data(phyXssj)))
+  results &lt;- rbind(results, 
+                   data.frame(tax = j,
+                              n_otu = as.numeric(tb_r5[j]), 
+                              mean_relabu = mean(taxa_sums(phyXssj)),
+                              Fval = mdl$aov.tab$F.Model[1],  
+                              Pval = mdl$aov.tab$`Pr(&gt;F)`[1]))
+}
+print(results)</code></pre>
+<p>Eventually, this should return that Lactobacillaceae is not that important, while most of the other families are. Select one particular family and try to narrow down the particular differences. For instance, the family; Rikenellaceae with only 7 OTUs and a fair abundance coverage, are pretty good in discriminating the diets. Below is some code which takes you to some tiny details.</p>
+<pre class="r"><code>ic &lt;- r5==&#39;f__Rikenellaceae&#39; &amp; !is.na(r5)
+phyXssj &lt;- subset_taxa(phyXss,ic)
+ord &lt;- ordinate(phyXssj,&#39;NMDS&#39;,&#39;bray&#39;)
+plot_ordination(phyXssj,ord, color = &#39;Description&#39;) + stat_ellipse()
+plot_ordination(phyXssj,ord, type = &#39;taxa&#39;)
+
+# An explicite analysis 
+df &lt;- data.frame(t(otu_table(phyXssj)), sample_data(phyXssj))
+ggplot(data = df, aes(OTU_76, OTU_352 + 0.001, color = Description)) + 
+  geom_point() + 
+  scale_x_log10() + 
+  scale_y_log10() + 
+  stat_ellipse()</code></pre>
+</div>
 <div id="metabolite-correlations" class="section level2">
-<h2><span class="header-section-number">1.4</span> Metabolite correlations</h2>
+<h2><span class="header-section-number">1.7</span> Metabolite correlations</h2>
 <p>At the end of trial fecal water metabolomics is included. Investigate whether some of these can explain the beta diversity variation. Further, try to make a visualization where metabolite levels is included.</p>
 </div>
 <div id="microbiome---diet---metabolome-interactions" class="section level2">
-<h2><span class="header-section-number">1.5</span> Microbiome - Diet - Metabolome interactions</h2>
+<h2><span class="header-section-number">1.8</span> Microbiome - Diet - Metabolome interactions</h2>
 <p>Furhter, investigate if, for some metabolites, the association between metabolites and microbiome is only introduced by the design. I.e. when accounting for the effect of the design, the metabolite-microbiome associations becomes weaker.</p>
 <pre class="r"><code>phyXsel &lt;- subset_samples(phyX, time == &#39;Slut&#39;)
 D_BC &lt;- phyloseq::distance(phyXsel, &quot;bray&quot;)
@@ -491,8 +547,24 @@ adonis(D_BC ~ Fructose, data = data.frame(sample_data(phyXsel)))
 adonis(D_BC ~ Description + Fructose, data = data.frame(sample_data(phyXsel)))</code></pre>
 </div>
 <div id="wihtin-subject-memory" class="section level2">
-<h2><span class="header-section-number">1.6</span> Wihtin subject memory</h2>
+<h2><span class="header-section-number">1.9</span> Wihtin subject memory</h2>
 <p>Within each diet group, test if there is memory in microbiome over time. That is, how large degree of the variation is due to the individual mice? Is the degree of memory the same for the diffent diets?</p>
+</div>
+<div id="is-differential-abundance-results-depending-on-the-phylogenetic-tree" class="section level2">
+<h2><span class="header-section-number">1.10</span> Is differential Abundance results depending on the phylogenetic tree?</h2>
+<p>The effect size in from <em>differential abundance testing</em> is a vector of length <em>p</em> (the number of variables). In order to answer the question <em>“is the DA results depending on the phylogentic tree?”</em> we can use the adonis set, just flipping the problem to a <em>p</em> by <em>p</em> similarity matrix based on the the phylotree and then regress on to the DA information.</p>
+<pre class="r"><code>library(phyloseq)
+library(DESeq2)
+load(&#39;./data/Mice_csec.RData&#39;)
+# do DA with DEseq2
+birhtmode_ds &lt;- phyloseq_to_deseq2(phyX, ~ Birth_mode)
+res &lt;- DESeq(birhtmode_ds, test=&quot;Wald&quot;, fitType=&quot;parametric&quot;)
+tb &lt;- results(res, cooksCutoff = FALSE)
+
+# run adonis versus tree
+tree &lt;- ape::cophenetic.phylo(phy_tree(phyX))
+tree[1:3,1:3]
+adonis(tree ~ tb$log2FoldChange&gt;0,permutations = 100)</code></pre>
 </div>
 </div>
 <div id="references" class="section level1 unnumbered">

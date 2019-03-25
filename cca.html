@@ -281,6 +281,9 @@ $(document).ready(function () {
         <li>
   <a href="about.html">Home</a>
 </li>
+<li>
+  <a href="pkgs.html">Installation</a>
+</li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
     Descriptives
@@ -288,9 +291,6 @@ $(document).ready(function () {
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-    <li>
-      <a href="pkgs.html">Packages</a>
-    </li>
     <li>
       <a href="prepro.html">Preprocessing</a>
     </li>
@@ -360,6 +360,9 @@ $(document).ready(function () {
 <p>For an introduction and some <em>getting started</em> code check out the <a href="http://mixomics.org/methods/rcca/">mixOmics package webpage</a>.</p>
 <p>Indeed the vanilla CCA is limited due to dimentionallity issues from way to many variables compared to number of samples. Therefore several attemps has been made to circumvent this. Here we will exchange correlation by covariance to add a simple fix.</p>
 <p>Below is a 2 component canonical covariance model.</p>
+<p>But first you need to install a package.</p>
+<pre class="r"><code>library(devtools)
+install_github(&#39;mortenarendt/StructuralKnowledgeModl&#39;)</code></pre>
 <pre class="r"><code>library(structMultMdl)
 library(phyloseq)
 library(tidyverse)
@@ -400,17 +403,17 @@ ggplot(data = scores, aes(tx.1,ty.1)) +
   geom_point() + 
   xlab(&#39;Metabolomics Score&#39;) + ylab(&#39;Microbiome Score&#39;) + 
   stat_smooth(method = lm, se= F)</code></pre>
-<p><img src="cca_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p><img src="cca_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
 <pre class="r"><code>ggplot(data = loadsY[order(loadsY$Rank4),],aes(x = 1:476,wy.1,fill = Rank3)) + 
   geom_bar(stat = &#39;identity&#39;) + 
   ggtitle(&#39;Microbiome loadings&#39;) + 
   theme(legend.position = &#39;bottom&#39;)</code></pre>
-<p><img src="cca_files/figure-html/unnamed-chunk-2-2.png" width="672" /></p>
+<p><img src="cca_files/figure-html/unnamed-chunk-3-2.png" width="672" /></p>
 <pre class="r"><code>ggplot(data = loadsX,aes(wx.1,wx.2,label = name)) + 
   geom_point() + geom_label() + 
   ggtitle(&#39;Metabolomics loadings&#39;) + 
   geom_hline(yintercept = 0) + geom_vline(xintercept = 0)</code></pre>
-<p><img src="cca_files/figure-html/unnamed-chunk-2-3.png" width="672" /></p>
+<p><img src="cca_files/figure-html/unnamed-chunk-3-3.png" width="672" /></p>
 <p>This is a nice correlation, and this model is probably a good model, slightly overfitted though, but the main concern here is that it is hard to interpret, as <em>ALL</em> the OTUs are active and further, tends to be pointing in different direction eventhough they are rather similar wrt taxonomy.</p>
 </div>
 <div id="penalized-canonical-correlation-analysis" class="section level1 unnumbered">
@@ -450,16 +453,16 @@ R &lt;- fixKernelMatrix(exp(-D))</code></pre>
 
 print(res_pen$res_df)</code></pre>
 <pre><code>##            A p_corr_cmp1 p_corr_cmp2 p_var_cmp1 p_var_cmp2
-## 1  0.0000000           0  0.00000000          0  0.0000000
-## 2  0.1111111           0  0.00000000          0  0.0000000
-## 3  0.2222222           0  0.03333333          0  0.0000000
-## 4  0.3333333           0  0.00000000          0  0.0000000
-## 5  0.4444444           0  0.00000000          0  0.0000000
-## 6  0.5555556           0  0.00000000          0  0.0000000
-## 7  0.6666667           0  0.03333333          0  0.0000000
-## 8  0.7777778           0  0.03333333          0  0.0000000
-## 9  0.8888889           0  0.03333333          0  0.1333333
-## 10 1.0000000           0  0.16666667          0  0.3666667</code></pre>
+## 1  0.0000000  0.00000000  0.00000000          0  0.0000000
+## 2  0.1111111  0.03333333  0.00000000          0  0.0000000
+## 3  0.2222222  0.00000000  0.00000000          0  0.0000000
+## 4  0.3333333  0.00000000  0.03333333          0  0.0000000
+## 5  0.4444444  0.00000000  0.00000000          0  0.0000000
+## 6  0.5555556  0.00000000  0.03333333          0  0.0000000
+## 7  0.6666667  0.00000000  0.03333333          0  0.0000000
+## 8  0.7777778  0.03333333  0.00000000          0  0.0000000
+## 9  0.8888889  0.00000000  0.00000000          0  0.0000000
+## 10 1.0000000  0.00000000  0.20000000          0  0.2333333</code></pre>
 <p>Now we take a descision on which model to use and extract it in a similar fashion as above. Resulting in the microbiome loadingplot below.</p>
 </div>
 <div id="exercises" class="section level1">
