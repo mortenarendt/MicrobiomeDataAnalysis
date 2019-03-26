@@ -485,13 +485,14 @@ knitr::kable(tbanova,digits = c(0,1,5))</code></pre>
 <div id="make-all-three-pairwise-comparisons" class="section level2">
 <h2><span class="header-section-number">1.5</span> Make all three pairwise comparisons</h2>
 <p>Seems like there is a lot of difference due to diet, but which group is most different? Are there any difference between the two sausage-based diets? HINT: Below some code for inspiration. But it is stripped for preprocessing! That you need to do your self!</p>
+<p>Furhter, which statistical metric (output from the adonis model) describes the difference between diets?</p>
 <pre class="r"><code>phyXss &lt;- subset_samples(phyX, time==&#39;Slut&#39;)
 models &lt;- list()
 comparison &lt;- vector()
 c &lt;- 0
 for (j in unique(data.frame(sample_data(phyXss))$Description)){
   c &lt;- c+1
-  phyXssj &lt;- subset_samples(phyXss,df$Description!=j)
+  phyXssj &lt;- subset_samples(phyXss,data.frame(sample_data(phyXss))$Description!=j)
   D_BC &lt;- phyloseq::distance(phyXssj, &quot;bray&quot;)
   models[[c]] &lt;- adonis(D_BC ~ Description, data = data.frame(sample_data(phyXssj)))
   comparison[c] &lt;- paste(&#39;Not with&#39;, j)
@@ -514,6 +515,8 @@ for (j in names(tb_r5[tb_r5&gt;3])){
                    data.frame(tax = j,
                               n_otu = as.numeric(tb_r5[j]), 
                               mean_relabu = mean(taxa_sums(phyXssj)),
+                              MSdiet = mdl$aov.tab$MeanSqs[1],  
+                              MSres = mdl$aov.tab$MeanSqs[2],  
                               Fval = mdl$aov.tab$F.Model[1],  
                               Pval = mdl$aov.tab$`Pr(&gt;F)`[1]))
 }
