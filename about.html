@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
@@ -69,9 +69,7 @@ h6 {
 </style>
 
 
-</head>
 
-<body>
 
 <style type = "text/css">
 .main-container {
@@ -85,7 +83,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -190,8 +187,6 @@ $(document).ready(function () {
 });
 </script>
 
-<div class="container-fluid main-container">
-
 <!-- tabsets -->
 
 <style type="text/css">
@@ -236,6 +231,7 @@ $(document).ready(function () {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -248,20 +244,17 @@ $(document).ready(function () {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
 
 
 
@@ -352,17 +345,17 @@ $(document).ready(function () {
 </div>
 
 
-<p>This site serves as dry-lab material for the course 7 days PhD <em>Microbiome analysis using 2nd and 3rd generation DNA sequencing + multivariate data analysis</em>. Here you will find content on statistical data analysis of amplicon-seq microbiome data including preprocessing, descriptives, univariate- and multivariate statistical modelling ending with comparison additional layers of omics data.</p>
+<p>This site serves as dry-lab material for the 2 week PhD course <em>Microbiome analysis using 2nd and 3rd generation DNA sequencing + multivariate data analysis</em>. Here you will find content on statistical data analysis of amplicon-seq microbiome data including preprocessing, descriptives, univariate- and multivariate statistical modelling ending with comparison additional layers of omics data.</p>
 <p>We heavily draw on the great work of the authors of phyloseq and metagenomeseq.</p>
 <div id="program" class="section level1 unnumbered">
 <h1>Program</h1>
-<div id="monday-25th-of-march" class="section level2 unnumbered">
-<h2>Monday 25th of March</h2>
+<div id="day-1" class="section level2 unnumbered">
+<h2>Day 1</h2>
 <p>9-12: Preprocessing, alpha- and beta diversity</p>
 <p>13-16: Differential abundance testing</p>
 </div>
-<div id="tueday-26th-of-march" class="section level2 unnumbered">
-<h2>Tueday 26th of March</h2>
+<div id="day-2" class="section level2 unnumbered">
+<h2>Day 2</h2>
 <p>9-12: Statistical testing of beta diversity metrics - <em>Permanova</em></p>
 <p>13-16: Multiomics with heatmaps and canonical correlation analysis</p>
 </div>
@@ -385,6 +378,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
