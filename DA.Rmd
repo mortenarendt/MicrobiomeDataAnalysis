@@ -1,0 +1,250 @@
+---
+title: "Differential Abundance Testing"
+output: 
+  html_document:
+    number_sections: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F, eval = F)
+```
+
+Having a study design in with there are two (or more) groups of samples, say male/female, diet1/diet2, etc. one is often interested in knowing: 
+
+* Is there a difference between the groups? 
+* Which bacteria / OTUs are most different between the groups? 
+
+This concept is within microbiome statistics refered to as __Differential Abundance Testing__.  
+
+The principal behind is very simple: Given an OTU matrix of _p_ different OTUs; 
+
+1) Perform _p_ univariate tests assigning an effect size and a p-value to each OTU on the question of differential abundance. 
+That could for example be based on a simple t-test
+
+2) Arrange the _p_ tests according to the p-value going from the smallest (most different OTU) to the largest (least different OTU)
+
+3) Deside a cut point for which OTUs to be assigned _discoveries_. I.e. OTUs with p-values below $p_{cut}$ to be discoveries. This task is known as multiple-testing-correction, and is a general statistical concept. 
+
+Given that todays microbiome studies generates a large number of OTUs, _p_ often higher than 1.000 there are two concerns: 
+
+* Choose a reliable and powerful univariate model
+* Boost the discovery chance by filter and/or aglommeration 
+
+The paper by Thorsen et al 2016 investigates a range of statistical strategies on both the ability to sort the OTUs from the most discriminatory to the least, as well as the false discovery rate control. Russel et al (2019) have streamlined this approach for selecting the relevant statistical engine, which nicely screens +20 methods in very few lines of code (see [DAtest](https://github.com/Russel88/DAtest) for code)  
+
+(see refs below)
+
+
+# Exercise
+
+## Setting up data
+
+Rarefy the _mice birth mode_ data to even depth, and use the phyloseq_to_deseq2() function to convert format including birht mode as class information. 
+
+## DEseq
+
+Perform DA test using DESeq() from the DESeq2 library. You might need to install this library in advance. 
+
+```{r, eval=FALSE}
+library(phyloseq)
+library(DESeq2)
+load('./data/Mice_csec.RData')
+
+birhtmode_ds <- phyloseq_to_deseq2(phyX, ~ Birth_mode)
+
+res <- DESeq(birhtmode_ds, test="Wald", fitType="parametric")
+```
+
+## Interpret results 
+
+Extract results and combine with tax information (from tax_table()) as well as read frequency per OTU as well as presence/absence percentage. 
+
+```{r, eval=FALSE}
+tb <- results(res, cooksCutoff = FALSE)
+txtb <- data.frame(tax_table(phyX))
+
+abu <- taxa_sums(phyX)
+presence <- apply(otu_table(phyX)>0,1,sum)
+
+df_res <- data.frame(est = tb$log2FoldChange, se = tb$lfcSE, pv = tb$pvalue, pvadj = tb$padj, abu, presence)
+df_res <- cbind(df_res, txtb)
+df_res$name <- rownames(df_res)
+```
+
+## Is this different from _null_?
+
+Plot a histogram of the unadjusted p-values. How should this plot look like if there were _no_ birth mode information in the data? 
+
+## Vulcano plot
+
+Plot a vulcano plot of the results. Try to facet out / or color according to a taxonomic level to get deeper insight on which bacteria that are affected the most. 
+
+```{r}
+ggplot(data = df_res, aes(est,-log10(pv), color = Rank4)) + 
+  geom_point() + 
+  geom_text(data = df_res[df_res$pv<0.0001,], aes(label = name), color = 'black') + # put label on the top stuff
+  theme(legend.position = 'none') + 
+  facet_wrap(~Rank3)
+```
+
+## rare/common vs difference
+
+Interpret the results as a function of read-frequency or presence/absence. Is it the dominating species that are most different? 
+
+## Effect of agglomoration
+
+Perform tax glommeration (tax_glom()) at some taxonomic level, and re-run the analysis. Do you get the same results? 
+
+## Metagenomeseq
+
+Do exactly the same just using t-test, wilcox tests as well as metagenomeseq's featureModel() and compare the results? Below are some code-inspiration. 
+
+```{r,eval = F}
+library(metagenomeSeq)
+mgsdata <- phyloseq_to_metagenomeSeq(phyX)
+mgsdata <- cumNorm(mgsdata, p=.5)
+mod <- model.matrix(~1+Birth_mode, data=pData(mgsdata))
+mgsfit <- fitFeatureModel(obj = mgsdata,mod = mod)
+
+predictor <- sample_data(phyX)$Birth_mode
+count_table <- log(t(otu_table(phyX)) + 1)
+count_table <- apply(count_table, 2, function(x) x/sum(x))
+pv_t <- apply(count_table, 2,function(x) t.test(x ~ predictor)$p.value)
+```
+
+
+```{r,include=F, eval=FALSE}
+library(phyloseq)
+library(ggplot2)
+library(DESeq2)
+load('./data/Mice_csec.RData')
+
+# initial pp
+phyX <- rarefy_even_depth(phyX)
+
+birhtmode_ds <- phyloseq_to_deseq2(phyX, ~ Birth_mode)
+res <- DESeq(birhtmode_ds, test="Wald", fitType="parametric")
+
+# prepare data
+tb <- results(res, cooksCutoff = FALSE)
+txtb <- data.frame(tax_table(phyX))
+df <- data.frame(est = tb$log2FoldChange, se = tb$lfcSE, pv = tb$pvalue, pvadj = tb$padj)
+df <- cbind(df, txtb)
+df$name <- rownames(df)
+
+# p-value histogram
+hist(tb$pvalue,40)
+# How should this look if there were no information in data? 
+
+# vulcano plot
+ggplot(data = df, aes(est,-log10(pv), color = Rank4)) + 
+  geom_point() + 
+  geom_text(data = df[df$pv<0.0001,], aes(label = name), color = 'black') + # put label on the top stuff
+  theme(legend.position = 'none') + 
+  facet_wrap(~Rank3)
+
+# table of the most interesting discoveries
+head(df[order(df$pv),], 30)
+
+# add data derived tax information such as number of samples with presence and frequency of reads and interpret data using this information.  
+n <- 31
+tax_info <- data.frame(prc_reads = 100*taxa_sums(phyX) / sum(taxa_sums(phyX)), 
+                       presence = 100*apply(otu_table(phyX)>0,1,sum) / n)
+df <- cbind(df, tax_info)
+
+ggplot(data = df, aes(presence, -log10(pv))) + geom_point() + stat_smooth() + scale_x_log10()
+
+ggplot(data = df, aes(est,-log10(pv), color = Rank4)) + 
+  geom_point() + 
+  geom_text(data = df[df$pv<0.0001,], aes(label = name), color = 'black') + # put label on the top stuff
+  theme(legend.position = 'none') + 
+  facet_wrap(~prc_reads>.5)
+
+# try to tax glommarate and look at the top discoveries from this analysis. Is there consistency between the results? 
+
+phyXr5 <- tax_glom(phyX,'Rank5')
+
+birhtmode_ds <- phyloseq_to_deseq2(phyXr5, ~ Birth_mode)
+res <- DESeq(birhtmode_ds, test="Wald", fitType="parametric")
+
+# prepare data
+tb <- results(res, cooksCutoff = FALSE)
+txtb <- data.frame(tax_table(phyXr5)[,1:5])
+df <- data.frame(est = tb$log2FoldChange, se = tb$lfcSE, pv = tb$pvalue, pvadj = tb$padj)
+df <- cbind(df, txtb)
+df$name <- rownames(df)
+
+# p-value histogram
+hist(tb$pvalue,40)
+# How should this look if there were no information in data? 
+
+# vulcano plot
+ggplot(data = df, aes(est,-log10(pv), color = Rank4)) + 
+  geom_point() + 
+  geom_text(data = df[df$pv<0.0001,], aes(label = name), color = 'black') + # put label on the top stuff
+  theme(legend.position = 'none')
+
+# table of the most interesting discoveries
+head(df[order(df$pv),], 30)
+
+ggplot(data = df, aes(est,-log10(pv), color = Rank4)) + 
+  geom_point() + 
+  geom_text(data = df[df$pv<0.0001,], aes(label = Rank5), color = 'black') + # put label on the top stuff
+  theme(legend.position = 'none')
+```
+
+
+
+
+```{r, include=FALSE, eval=FALSE}
+library(phyloseq)
+library(ggplot2)
+library(DESeq2)
+library(metagenomeSeq)
+load('./data/Mice_csec.RData')
+
+# initial pp
+phyX <- rarefy_even_depth(phyX)
+
+birhtmode_ds <- phyloseq_to_deseq2(phyX, ~ Birth_mode)
+res <- DESeq(birhtmode_ds, test="Wald", fitType="parametric")
+tb <- results(res, cooksCutoff = FALSE)
+
+mgsdata <- phyloseq_to_metagenomeSeq(phyX)
+mgsdata <- cumNorm(mgsdata, p=.5)
+mod <- model.matrix(~1+Birth_mode, data=pData(mgsdata))
+mgsfit <- fitFeatureModel(obj = mgsdata,mod = mod)
+
+
+predictor <- sample_data(phyX)$Birth_mode
+count_table <- log(t(otu_table(phyX)) + 1)
+count_table <- apply(count_table, 2, function(x) x/sum(x))
+pv_t <- apply(count_table, 2,function(x) t.test(x ~ predictor)$p.value)
+
+
+
+# prepare data
+txtb <- data.frame(tax_table(phyX))
+
+df <- data.frame(est_DESeq = tb$log2FoldChange, se_DESeq = tb$lfcSE, pv_DESeq = tb$pvalue, pvadj_DESeq = tb$padj, 
+                 est_MGS = mgsfit$fitZeroLogNormal$logFC, se_MGS = mgsfit$fitZeroLogNormal$se, 
+                 pv_MGS = mgsfit$pvalues, 
+                 pv_tt = pv_t)
+df <- cbind(df, txtb)
+df$name <- rownames(df)
+ggplot(data = df, aes(pv_DESeq, pv_MGS)) + geom_point() + scale_y_log10() + scale_x_log10()
+
+```
+  
+# References {-}
+
+[Thorsen, Jonathan, Asker Brejnrod, Martin Mortensen, Morten A. Rasmussen, Jakob Stokholm, Waleed Abu Al-Soud, Søren Sørensen, Hans Bisgaard, and Johannes Waage. __Large-scale benchmarking reveals false discoveries and count transformation sensitivity in 16S rRNA gene amplicon data analysis methods used in microbiome studies__,  _Microbiome_ 4, no. 1 (2016): 62.](https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-016-0208-8)
+
+[Paulson, Joseph N., O. Colin Stine, Héctor Corrada Bravo, and Mihai Pop. __Differential abundance analysis for microbial marker-gene surveys__. Nature methods 10, no. 12 (2013): 1200.](http://www.nature.com/nmeth/journal/v10/n12/full/nmeth.2658.html)
+
+[Love, Michael I., Wolfgang Huber, and Simon Anders. __Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2__. Genome biology 15.12 (2014): 550.](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8)
+
+[Russel, Jakob, Jonathan Thorsen, Asker D. Brejnrod, Hans Bisgaard, Soren J. Sorensen, and Mette Burmolle. __DAtest: a framework for choosing differential abundance or expression method__. bioRxiv (2018): 241802.](https://www.biorxiv.org/content/biorxiv/early/2018/01/02/241802.full.pdf)
+
+Xia, Yinglin, Jun Sun, and Ding-Geng Chen. __Statistical analysis of microbiome data with R__. Springer, 2018.
+

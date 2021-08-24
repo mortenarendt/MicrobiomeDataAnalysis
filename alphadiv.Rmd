@@ -1,0 +1,147 @@
+---
+title: "Alpha Diversity"
+output: 
+  html_document:
+    number_sections: TRUE
+---
+
+<style>
+pre.bluecars {
+    background-color: #aabbff !important;
+}
+pre.blackcars {
+    background-color: #000000 !important;
+}
+pre.redcars {
+    background-color: #ffbbbb !important;
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F)
+```
+
+For each sample a single measure can be calculated describing the diversity within the sample. The most intuitive is _how many different bacteria (OTUs) is observed_. But there are others. The phyloseq package with the function plot_richness() supports seven different versions. 
+
+These can easily be calculated and visualized according to a given design. 
+
+```{r, eval = T}
+library(ggplot2)
+library(phyloseq)
+load('./data/Mice_csec.RData')
+
+pp <- plot_richness(phyX)
+AlphaD <- pp$data
+
+ggplot(data = AlphaD, aes(Birth_mode, value, fill = Birth_mode)) + 
+  geom_boxplot() + 
+  geom_jitter() + 
+  facet_wrap(~variable, scales = 'free') + 
+  theme(legend.position = 'top')
+```
+
+What you see here, is some indications of _vaginal delivery_ results in lower diversity. 
+
+Shannon diversity is a metric with relatively high dependency on rare OTUs. _Simpson_ diversity (and _Inverse Simpson_) depends on the even-ness of the observed OTUs in the samples and is hence relatively independent on rare species, as is obvious from the mathematical formula. All three measures seems to be related to birth mode. 
+
+In order to get more hands-on experience with alpha diversity and especially how different preprocessing techniques influences these metrics, the exercise below show case how inherient the stocastisity of the sequencing depth is in the data. 
+
+```{r, include=FALSE}
+cnt <- matrix(c(0.49,0.1,0.49,0.88,0.02,0.02),ncol = 3)
+#apply(cnt,1,function(x) 1 - sum(x^2))
+apply(cnt,1,function(x) -sum(x*log(x)))
+apply(cnt,1,function(x) 1 / sum(x^2))
+```
+
+
+# Exercise
+
+## With No prepro
+
+Rerun the above alpha diversity analysis with no preprocessing of the data
+
+## Alpha vs library size
+
+Compare each measure of alpha diversity with the library size (number of reads per sample). What is problematic? (You can take inspiration in the code below on how to do this in R)
+
+```{r, eval = F}
+libsize <- data.frame(libsize = sample_sums(phyX))
+
+# merge
+AlphaD$X.SampleID <- as.character(trimws(AlphaD$X.SampleID))
+AlphaD <- merge(AlphaD, libsize, by.x = 'X.SampleID', by.y = 'row.names')
+
+ggplot(data = AlphaD, aes(libsize,value)) + 
+  geom_point() + 
+  stat_smooth(method = lm) + 
+  facet_wrap(~variable, scales = 'free')
+```
+
+Two preprocessing techniques are investigated in terms their ability to remove the dependency on the library size. Namely rarefaction and OTU-filtering. 
+
+## Rarefy
+
+Rarefy the sample to even depth, and calculate the corresponding alpha diversity measures
+
+```{r eval=FALSE}
+phyXrare <- rarefy_even_depth(phyX)
+AlphaDrare <- plot_richness(phyXrare)$data
+```
+
+## Does it work?
+
+Merge with the __original library size__ and check if you had succes. 
+
+```{r, eval=FALSE}
+AlphaDrare$X.SampleID <- as.character(trimws(AlphaDrare$X.SampleID))
+AlphaDrare <- merge(AlphaDrare, libsize, by.x = 'X.SampleID', by.y = 'row.names')
+
+ggplot(data = AlphaDrare, aes(....)) + 
+```
+
+```{r, eval=FALSE, include=F}
+AlphaDrare$X.SampleID <- as.character(trimws(AlphaDrare$X.SampleID))
+AlphaDrare <- merge(AlphaDrare, libsize, by.x = 'X.SampleID', by.y = 'row.names')
+
+ggplot(data = AlphaDrare, aes(libsize,value)) + 
+  geom_point() + 
+  stat_smooth(method = lm) + 
+  facet_wrap(~variable, scales = 'free')
+```
+
+## Filter of rare taxa 
+
+Now try to use a filter that removes rare taxa
+
+```{r, eval=F, include=T}
+phyXfilt <- filter_taxa(phyX,function(x) sum(x>0) > ??? , TRUE)
+
+AlphaDfilt <- plot_richness(phyXfilt)$data
+AlphaDfilt$X.SampleID <- as.character(trimws(AlphaDfilt$X.SampleID))
+AlphaDfilt <- merge(AlphaDfilt, libsize, by.x = 'X.SampleID', by.y = 'row.names')
+ggplot(data = AlphaDfilt, aes(...)) + 
+```
+
+```{r, eval=F, include=F}
+phyXfilt <- filter_taxa(phyX,function(x) sum(x>0) > 31*0.5, TRUE)
+
+AlphaDfilt <- plot_richness(phyXfilt)$data
+AlphaDfilt$X.SampleID <- as.character(trimws(AlphaDfilt$X.SampleID))
+AlphaDfilt <- merge(AlphaDfilt, libsize, by.x = 'X.SampleID', by.y = 'row.names')
+ggplot(data = AlphaDfilt, aes(libsize,value)) + 
+  geom_point() + 
+  stat_smooth(method = lm) + 
+  facet_wrap(~variable, scales = 'free')
+
+ggplot(data = AlphaDfilt, aes(Birth_mode,value)) + 
+  geom_boxplot() + geom_jitter() + 
+  facet_wrap(~variable, scales = 'free')
+```
+
+What you have learned here is that sequencing depth - and its variation between samples - inheriently affects data analysis. 
+Preprocessing is capable of handling these issues, but __only to some extend__.
+
+# References {-}
+
+Xia, Yinglin, Jun Sun, and Ding-Geng Chen. __Statistical analysis of microbiome data with R__. Springer, 2018. Chapter 6. 
+

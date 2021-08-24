@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
@@ -19,16 +19,29 @@
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 
-<style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
-  pre:not([class]) {
-    background-color: white;
-  }
-</style>
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
 <script type="text/javascript">
 if (window.hljs) {
   hljs.configure({languages: []});
@@ -41,37 +54,10 @@ if (window.hljs) {
 
 
 
-<style type="text/css">
-h1 {
-  font-size: 34px;
-}
-h1.title {
-  font-size: 38px;
-}
-h2 {
-  font-size: 30px;
-}
-h3 {
-  font-size: 24px;
-}
-h4 {
-  font-size: 18px;
-}
-h5 {
-  font-size: 16px;
-}
-h6 {
-  font-size: 12px;
-}
-.table th:not([align]) {
-  text-align: left;
-}
-</style>
 
 
-</head>
 
-<body>
+
 
 <style type = "text/css">
 .main-container {
@@ -79,13 +65,8 @@ h6 {
   margin-left: auto;
   margin-right: auto;
 }
-code {
-  color: inherit;
-  background-color: rgba(0, 0, 0, 0.04);
-}
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -99,40 +80,13 @@ button.code-folding-btn:focus {
 summary {
   display: list-item;
 }
+pre code {
+  padding: 0;
+}
 </style>
 
 
 <style type="text/css">
-/* padding for bootstrap navbar */
-body {
-  padding-top: 51px;
-  padding-bottom: 40px;
-}
-/* offset scroll position for anchor links (for fixed navbar)  */
-.section h1 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h2 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h3 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h4 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h5 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h6 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
 .dropdown-submenu {
   position: relative;
 }
@@ -160,7 +114,7 @@ body {
   margin-right: -10px;
 }
 .dropdown-submenu:hover>a:after {
-  border-left-color: #ffffff;
+  border-left-color: #adb5bd;
 }
 .dropdown-submenu.pull-left {
   float: none;
@@ -172,7 +126,7 @@ body {
 }
 </style>
 
-<script>
+<script type="text/javascript">
 // manage active state of menu based on current page
 $(document).ready(function () {
   // active menu anchor
@@ -183,14 +137,25 @@ $(document).ready(function () {
   var menuAnchor = $('a[href="' + href + '"]');
 
   // mark it active
-  menuAnchor.parent().addClass('active');
+  menuAnchor.tab('show');
 
   // if it's got a parent navbar menu mark it active as well
   menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
 });
 </script>
-
-<div class="container-fluid main-container">
 
 <!-- tabsets -->
 
@@ -200,7 +165,6 @@ $(document).ready(function () {
   max-height: 500px;
   min-height: 44px;
   overflow-y: auto;
-  background: white;
   border: 1px solid #ddd;
   border-radius: 4px;
 }
@@ -236,6 +200,7 @@ $(document).ready(function () {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -248,20 +213,17 @@ $(document).ready(function () {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
 
 
 
@@ -343,7 +305,7 @@ $(document).ready(function () {
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-<div class="fluid-row" id="header">
+<div id="header">
 
 
 
@@ -359,10 +321,7 @@ $(document).ready(function () {
 <p>While this can seem rather complex, combining beta diversity measures with dimentionallity reduction models such as Principal Component Analysis, comprise a very powerful tool for visualizing similarities and sisimilarities between samples.</p>
 <div id="from-otu-table-to-distance-table" class="section level1 unnumbered">
 <h1>From OTU table to Distance table</h1>
-<div class="figure">
-<img src="figs/OTU2bdiv.png" />
-
-</div>
+<p><img src="figs/OTU2bdiv.png" /></p>
 <p>Given an OTU table with <span class="math inline">\(n\)</span> samples and <span class="math inline">\(p\)</span> variables (OTUs): <span class="math inline">\(\mathbf{C}\)</span> the first task is to calculate all <span class="math inline">\(n(n-1)/2\)</span> pairwise distances and represent those in a symmetric <span class="math inline">\(n\)</span> by <span class="math inline">\(n\)</span> matrix <span class="math inline">\(\mathbf{D}\)</span>.</p>
 <p>There are several different ways to calculate the beta diversity. Check out the distanceMethodList to see those supported by phyloseq.</p>
 <p>These can in general be grouped according to two criterions:</p>
@@ -396,13 +355,12 @@ $(document).ready(function () {
 </div>
 <div id="from-distance-table-to-pcoa-plot" class="section level1 unnumbered">
 <h1>From Distance table to PCoA plot</h1>
-<div class="figure">
-<img src="figs/bdiv2PCoA.png" />
-
-</div>
+<p><img src="figs/bdiv2PCoA.png" /></p>
 <p>Beta diversity measures has a similar structure as correlation / covariance matrices. Such matrices can be projected into a low dimensionality representation which can be visualized, showing the <em>largest common variation</em> from complex data in a simple plot. These plots are often refered to as ordination plots. For theory on such dimensionality reduction look up Principal Component Analysis (PCA), eigenvalue/eigenvector decomposition and multidimensional scaling.</p>
 <p>The function ordinate() and plot_ordination() from phyloseq are very useful for beta diversity plotting of microbiome data.</p>
-<pre class="r"><code>load(&#39;./data/Rats_inulin.RData&#39;)
+<pre class="r"><code>library(phyloseq)
+library(ggplot2)
+load(&#39;./data/Rats_inulin.RData&#39;)
 ordBC &lt;- ordinate(phyX, &quot;PCoA&quot;, &quot;bray&quot;)
 plot_ordination(phyX,ordBC, color = &#39;Description&#39;) + 
   stat_ellipse() + 
@@ -487,7 +445,16 @@ cor(dist_df)</code></pre>
 <p>Try to compute a normal linear anova model with the component axis (1,2,..) as response dependent on time and rat ID.</p>
 <pre class="r"><code>mdl &lt;- lm(data = df[df$method==&#39;Jaccard&#39;,],Axis.1~ID + time*Description)
 anova(mdl)</code></pre>
+<div id="the-tidyverse-way" class="section level3">
+<h3><span class="header-section-number">1.6.1</span> The tidyverse way</h3>
+<p>There is a new R-modelling paragdigme making it easy to do many things at once. If you find the coding trivial, it might be worth looking into, as it - after some headache - makes life easier. However, it is not a microbiome-thing, only R, and you can achieve the same with the more basic commands. Below is shown how the linear models from the chunk above is computed for all methods using the tidyverse and broom packages.</p>
+<pre class="r"><code>library(tidyverse)
+library(broom)
+df %&gt;% 
+  group_by(method) %&gt;% 
+  do(lm(data = ., Axis.1~ID + time*Description) %&gt;% anova %&gt;% tidy)</code></pre>
 <p>This is kinda add hoc, as the composition is captured in not-only a single component. I.e. instead of using Axis.1 we would like to use all the Axes,… or the entire distance matrix. This is exactly the purpose of permanova. See more under <strong>Statistical inference</strong> -&gt; <strong>ANOVA on beta diversity</strong>.</p>
+</div>
 </div>
 </div>
 <div id="references" class="section level1 unnumbered">
@@ -507,7 +474,7 @@ anova(mdl)</code></pre>
 
 // add bootstrap table styles to pandoc tables
 function bootstrapStylePandocTables() {
-  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
 }
 $(document).ready(function () {
   bootstrapStylePandocTables();
@@ -515,6 +482,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
