@@ -7,6 +7,8 @@ output:
 
 This site serves as dry-lab material for the 2 week PhD course  _Microbiome analysis using 2nd and 3rd generation DNA sequencing + multivariate data analysis_. Here you will find content on statistical data analysis of amplicon-seq microbiome data including preprocessing, descriptives, univariate- and multivariate statistical modelling ending with comparison additional layers of omics data. 
 
+The course slides can be found [here](https://github.com/mortenarendt/MicrobiomeDataAnalysis/blob/master/figs/MicrobiomeDatanalysis.pdf)
+
 We heavily draw on the great work of the authors of phyloseq and metagenomeseq. 
 
 # Program {-}
