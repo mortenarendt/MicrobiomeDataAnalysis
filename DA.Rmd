@@ -45,7 +45,7 @@ Rarefy the _mice birth mode_ data to even depth, and use the phyloseq_to_deseq2(
 
 Perform DA test using DESeq() from the DESeq2 library. You might need to install this library in advance. 
 
-```{r, eval=FALSE}
+```{r, eval=T, message=FALSE}
 library(phyloseq)
 library(DESeq2)
 load('./data/Mice_csec.RData')
@@ -59,7 +59,7 @@ res <- DESeq(birhtmode_ds, test="Wald", fitType="parametric")
 
 Extract results and combine with tax information (from tax_table()) as well as read frequency per OTU as well as presence/absence percentage. 
 
-```{r, eval=FALSE}
+```{r, eval=T}
 tb <- results(res, cooksCutoff = FALSE)
 txtb <- data.frame(tax_table(phyX))
 
@@ -99,7 +99,7 @@ Perform tax glommeration (tax_glom()) at some taxonomic level, and re-run the an
 
 Do exactly the same just using t-test, wilcox tests as well as metagenomeseq's featureModel() and compare the results? Below are some code-inspiration. 
 
-```{r,eval = F}
+```{r,eval = T, message=FALSE}
 library(metagenomeSeq)
 mgsdata <- phyloseq_to_metagenomeSeq(phyX)
 mgsdata <- cumNorm(mgsdata, p=.5)
@@ -107,9 +107,39 @@ mod <- model.matrix(~1+Birth_mode, data=pData(mgsdata))
 mgsfit <- fitFeatureModel(obj = mgsdata,mod = mod)
 
 predictor <- sample_data(phyX)$Birth_mode
+# do some preprocessing
 count_table <- log(t(otu_table(phyX)) + 1)
 count_table <- apply(count_table, 2, function(x) x/sum(x))
-pv_t <- apply(count_table, 2,function(x) t.test(x ~ predictor)$p.value)
+
+# use tidyverse and broom to get test
+tb_ttest <- count_table %>% 
+  cbind(predictor) %>% 
+  data.frame() %>% 
+  gather(otu,ra,-predictor) %>% 
+  group_by(otu) %>% 
+  do(t.test(data = ., ra~predictor) %>% tidy)
+
+
+```
+
+```{r, eval=TRUE}
+allres <- bind_rows(
+  data.frame(estimate = mgsfit@fitZeroLogNormal$logFC,
+             p.value = mgsfit@pvalues, 
+             otu = mgsfit@taxa,
+             test = 'metagenomeseq'),
+  data.frame(estimate = tb$log2FoldChange, 
+             p.value = tb$pvalue, 
+             otu = rownames(tb),
+             test = 'DESeq2'),
+  tb_ttest %>% mutate(test = 't-test')
+  )
+
+#plot it! 
+ggplot(data = allres, aes(estimate,-log10(p.value), label = otu)) + 
+  geom_point() + 
+  geom_text(data = allres[allres$p.value<10e-7 & !is.na(allres$p.value),]) +
+  facet_wrap(~test,nrow =  1, scales = 'free_x')
 ```
 
 
@@ -192,8 +222,6 @@ ggplot(data = df, aes(est,-log10(pv), color = Rank4)) +
   geom_text(data = df[df$pv<0.0001,], aes(label = Rank5), color = 'black') + # put label on the top stuff
   theme(legend.position = 'none')
 ```
-
-
 
 
 ```{r, include=FALSE, eval=FALSE}

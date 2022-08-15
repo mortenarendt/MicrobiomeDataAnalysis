@@ -1,34 +1,48 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
 
 <title>Preprocessing</title>
 
-<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 
-<style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
-  pre:not([class]) {
-    background-color: white;
-  }
-</style>
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
 <script type="text/javascript">
 if (window.hljs) {
   hljs.configure({languages: []});
@@ -41,37 +55,11 @@ if (window.hljs) {
 
 
 
-<style type="text/css">
-h1 {
-  font-size: 34px;
-}
-h1.title {
-  font-size: 38px;
-}
-h2 {
-  font-size: 30px;
-}
-h3 {
-  font-size: 24px;
-}
-h4 {
-  font-size: 18px;
-}
-h5 {
-  font-size: 16px;
-}
-h6 {
-  font-size: 12px;
-}
-.table th:not([align]) {
-  text-align: left;
-}
-</style>
 
 
-</head>
 
-<body>
+
+
 
 <style type = "text/css">
 .main-container {
@@ -79,13 +67,8 @@ h6 {
   margin-left: auto;
   margin-right: auto;
 }
-code {
-  color: inherit;
-  background-color: rgba(0, 0, 0, 0.04);
-}
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -99,40 +82,16 @@ button.code-folding-btn:focus {
 summary {
   display: list-item;
 }
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
 </style>
 
 
 <style type="text/css">
-/* padding for bootstrap navbar */
-body {
-  padding-top: 51px;
-  padding-bottom: 40px;
-}
-/* offset scroll position for anchor links (for fixed navbar)  */
-.section h1 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h2 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h3 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h4 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h5 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h6 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
 .dropdown-submenu {
   position: relative;
 }
@@ -160,7 +119,7 @@ body {
   margin-right: -10px;
 }
 .dropdown-submenu:hover>a:after {
-  border-left-color: #ffffff;
+  border-left-color: #adb5bd;
 }
 .dropdown-submenu.pull-left {
   float: none;
@@ -172,7 +131,7 @@ body {
 }
 </style>
 
-<script>
+<script type="text/javascript">
 // manage active state of menu based on current page
 $(document).ready(function () {
   // active menu anchor
@@ -183,14 +142,25 @@ $(document).ready(function () {
   var menuAnchor = $('a[href="' + href + '"]');
 
   // mark it active
-  menuAnchor.parent().addClass('active');
+  menuAnchor.tab('show');
 
   // if it's got a parent navbar menu mark it active as well
   menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
 });
 </script>
-
-<div class="container-fluid main-container">
 
 <!-- tabsets -->
 
@@ -200,7 +170,6 @@ $(document).ready(function () {
   max-height: 500px;
   min-height: 44px;
   overflow-y: auto;
-  background: white;
   border: 1px solid #ddd;
   border-radius: 4px;
 }
@@ -236,6 +205,7 @@ $(document).ready(function () {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -248,20 +218,17 @@ $(document).ready(function () {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
 
 
 
@@ -269,7 +236,7 @@ $(document).ready(function () {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -285,7 +252,7 @@ $(document).ready(function () {
   <a href="pkgs.html">Installation</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Descriptives
      
     <span class="caret"></span>
@@ -303,7 +270,7 @@ $(document).ready(function () {
   </ul>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Statistical inference
      
     <span class="caret"></span>
@@ -318,7 +285,7 @@ $(document).ready(function () {
   </ul>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Supervised Multivariate models
      
     <span class="caret"></span>
@@ -343,7 +310,7 @@ $(document).ready(function () {
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-<div class="fluid-row" id="header">
+<div id="header">
 
 
 
@@ -353,57 +320,136 @@ $(document).ready(function () {
 
 
 <p>Why should the data be preprocessed?</p>
-<p>For amplicon sequencing type of data, like 16S, there is in general three inherent characteristics of the count table:</p>
+<p>For amplicon sequencing type of data, like 16S, there is in general
+three inherent characteristics of the count table:</p>
 <ul>
-<li><strong>Sparsity</strong> meaning that the vast majority of the numbers in the count table is zero.</li>
-<li><strong>Compositionality</strong>. Due to the protocol only a fraction of the total DNA content is amplified, however, this amplification is assumed to be stochastic between samples, and as the same amount of DNA is thrown at the sequencer, then all samples should end up with the same number of counts. This is not the exactly the case, but differences in the so called <em>library size</em> is non informative, and the data is assumed compositional.</li>
-<li><strong>High number of variables</strong> (OTUs). Due to biology being complex and technology being sensitive, there is often a high number of different features (OTUs) from a study. These indeed refer to fine-grained information, but naturally carry statistical challenges.</li>
+<li><strong>Sparsity</strong> meaning that the vast majority of the
+numbers in the count table is zero.</li>
+<li><strong>Compositionality</strong>. Due to the protocol only a
+fraction of the total DNA content is amplified, however, this
+amplification is assumed to be stochastic between samples, and as the
+same amount of DNA is thrown at the sequencer, then all samples should
+end up with the same number of counts. This is not the exactly the case,
+but differences in the so called <em>library size</em> is non
+informative, and the data is assumed compositional.</li>
+<li><strong>High number of variables</strong> (OTUs). Due to biology
+being complex and technology being sensitive, there is often a high
+number of different features (OTUs) from a study. These indeed refer to
+fine-grained information, but naturally carry statistical
+challenges.</li>
 </ul>
 <div id="filtering-samples" class="section level1 unnumbered">
-<h1>Filtering samples</h1>
-<p>Outlying samples or samples with low quality (few sequences) should be removed up-front. The function prune_samples() in phyloseq can be used for this.</p>
+<h1 class="unnumbered">Filtering samples</h1>
+<p>Outlying samples or samples with low quality (few sequences) should
+be removed up-front. The function prune_samples() in phyloseq can be
+used for this.</p>
 </div>
 <div id="filtering-variables" class="section level1 unnumbered">
-<h1>Filtering variables</h1>
-<p>Criterion for removing variables are usually the frequency of samples with non-zero counts. The function filter_taxa() in phyloseq can be used for this.</p>
+<h1 class="unnumbered">Filtering variables</h1>
+<p>Criterion for removing variables are usually the frequency of samples
+with non-zero counts. The function filter_taxa() in phyloseq can be used
+for this.</p>
 </div>
 <div id="normalizing-or-rarefying" class="section level1 unnumbered">
-<h1>Normalizing or rarefying</h1>
-<p>Due to inherent constitutionality within each samples, normalization or rarefaction is needed either as preprocessing or as a part of the statistical modeling.</p>
+<h1 class="unnumbered">Normalizing or rarefying</h1>
+<p>Due to inherent constitutionality within each samples, normalization
+or rarefaction is needed either as preprocessing or as a part of the
+statistical modeling.</p>
 <div id="total-sum-scaling-tss" class="section level2 unnumbered">
-<h2>Total Sum Scaling (TSS)</h2>
-<p>TSS where each count within a sample is divided by the total number of counts within the sample, is the most intuitive and straight forward method for handling differences in library size. The function transform_sample_counts() in phyloseq can be used for this.<br />
-However, due to the library size being very much dependent on often very few OTUs carrying most of the reads within a sample, the uncertainty on these few OTUs consequently inflates the entire count table. One alternative is the <em>Cumulative Sum Scaling</em> (CSS) which normalizes by the sum of the lowest <em>not so common</em> OTUs within each sample. Statistically, this sum is less uncertain, and hence less inflation of uncertainty on the entire dataset. The function phyloseq_transform_css(), an add on to phyloseq from the <a href="https://rdrr.io/github/vmikk/metagMisc/">metagMisc package</a> can be used for this.</p>
+<h2 class="unnumbered">Total Sum Scaling (TSS)</h2>
+<p>TSS where each count within a sample is divided by the total number
+of counts within the sample, is the most intuitive and straight forward
+method for handling differences in library size. The function
+transform_sample_counts() in phyloseq can be used for this.<br />
+However, due to the library size being very much dependent on often very
+few OTUs carrying most of the reads within a sample, the uncertainty on
+these few OTUs consequently inflates the entire count table. One
+alternative is the <em>Cumulative Sum Scaling</em> (CSS) which
+normalizes by the sum of the lowest <em>not so common</em> OTUs within
+each sample. Statistically, this sum is less uncertain, and hence less
+inflation of uncertainty on the entire dataset. The function
+phyloseq_transform_css(), an add on to phyloseq from the <a
+href="https://rdrr.io/github/vmikk/metagMisc/">metagMisc package</a> can
+be used for this.</p>
 </div>
 <div id="rarefaction" class="section level2 unnumbered">
-<h2>Rarefaction</h2>
-<p>Rarefaction is a sub sampling technique where an equal amount of reads is stochastically drawn from the total amount of sequences for each sample. Consequently the data becomes <em>exact</em> compositional, however, the sensitivity for discovery of rare / low count species is going down. The function rarefy_even_depth() in phyloseq can be used for this.</p>
+<h2 class="unnumbered">Rarefaction</h2>
+<p>Rarefaction is a sub sampling technique where an equal amount of
+reads is stochastically drawn from the total amount of sequences for
+each sample. Consequently the data becomes <em>exact</em> compositional,
+however, the sensitivity for discovery of rare / low count species is
+going down. The function rarefy_even_depth() in phyloseq can be used for
+this.</p>
 </div>
 </div>
 <div id="transformation" class="section level1 unnumbered">
-<h1>Transformation</h1>
-<p>For some upstream statistical models the data might be better served by a monotone, but non-linear, transformation. The inherent distribution, where a few OTUs carry most of the reads, means that e.g. some beta diversity metrics will naturally strongly depend on those OTUs, with the consequence that the not-so-common OTUs do not contributes to variation. One way to counteract this, is to make the larger smaller while making the smaller larger…. the sqrt() and log() transformation does exactly that. However, log(0) is -infinity and hence destroys everything. When using the log() transform a fix needs to be incorporated for instance log(x + pc) where pc is a <em>pseudo count</em>. The function transform_sample_counts() in phyloseq can be used for this.</p>
+<h1 class="unnumbered">Transformation</h1>
+<p>For some upstream statistical models the data might be better served
+by a monotone, but non-linear, transformation. The inherent
+distribution, where a few OTUs carry most of the reads, means that
+e.g. some beta diversity metrics will naturally strongly depend on those
+OTUs, with the consequence that the not-so-common OTUs do not
+contributes to variation. One way to counteract this, is to make the
+larger smaller while making the smaller larger…. the sqrt() and log()
+transformation does exactly that. However, log(0) is -infinity and hence
+destroys everything. When using the log() transform a fix needs to be
+incorporated for instance log(x + pc) where pc is a <em>pseudo
+count</em>. The function transform_sample_counts() in phyloseq can be
+used for this.</p>
 </div>
 <div id="agglomeration" class="section level1 unnumbered">
-<h1>Agglomeration</h1>
-<p>OTU level resolution is sometimes not needed due to the biological questions manifesting at a higher taxonomic level. In such cases, all the counts within a taxonomic similar group of OTUs can be merged leading to fever features and less sparsity. The function tax_glom() in phyloseq can be used for this.</p>
+<h1 class="unnumbered">Agglomeration</h1>
+<p>OTU level resolution is sometimes not needed due to the biological
+questions manifesting at a higher taxonomic level. In such cases, all
+the counts within a taxonomic similar group of OTUs can be merged
+leading to fever features and less sparsity. The function tax_glom() in
+phyloseq can be used for this.</p>
 </div>
 <div id="references" class="section level1 unnumbered">
-<h1>References</h1>
-<p><a href="https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-016-0208-8">Thorsen, Jonathan, Asker Brejnrod, Martin Mortensen, Morten A. Rasmussen, Jakob Stokholm, Waleed Abu Al-Soud, Søren Sørensen, Hans Bisgaard, and Johannes Waage. <strong>Large-scale benchmarking reveals false discoveries and count transformation sensitivity in 16S rRNA gene amplicon data analysis methods used in microbiome studies</strong>, <em>Microbiome</em> 4, no. 1 (2016): 62.</a></p>
-<p><a href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1003531">McMurdie, Paul J., and Susan Holmes. <strong>Waste not, want not: why rarefying microbiome data is inadmissible</strong> <em>PLoS computational biology</em> 10, no. 4 (2014): e1003531.</a></p>
-<p><a href="http://www.nature.com/nmeth/journal/v10/n12/full/nmeth.2658.html">Paulson, Joseph N., O. Colin Stine, Héctor Corrada Bravo, and Mihai Pop. <strong>Differential abundance analysis for microbial marker-gene surveys</strong>. Nature methods 10, no. 12 (2013): 1200.</a></p>
-<p>Xia, Yinglin, Jun Sun, and Ding-Geng Chen. <strong>Statistical analysis of microbiome data with R</strong>. Springer, 2018.</p>
+<h1 class="unnumbered">References</h1>
+<p><a
+href="https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-016-0208-8">Thorsen,
+Jonathan, Asker Brejnrod, Martin Mortensen, Morten A. Rasmussen, Jakob
+Stokholm, Waleed Abu Al-Soud, Søren Sørensen, Hans Bisgaard, and
+Johannes Waage. <strong>Large-scale benchmarking reveals false
+discoveries and count transformation sensitivity in 16S rRNA gene
+amplicon data analysis methods used in microbiome studies</strong>,
+<em>Microbiome</em> 4, no. 1 (2016): 62.</a></p>
+<p><a
+href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1003531">McMurdie,
+Paul J., and Susan Holmes. <strong>Waste not, want not: why rarefying
+microbiome data is inadmissible</strong> <em>PLoS computational
+biology</em> 10, no. 4 (2014): e1003531.</a></p>
+<p><a
+href="http://www.nature.com/nmeth/journal/v10/n12/full/nmeth.2658.html">Paulson,
+Joseph N., O. Colin Stine, Héctor Corrada Bravo, and Mihai Pop.
+<strong>Differential abundance analysis for microbial marker-gene
+surveys</strong>. Nature methods 10, no. 12 (2013): 1200.</a></p>
+<p>Xia, Yinglin, Jun Sun, and Ding-Geng Chen. <strong>Statistical
+analysis of microbiome data with R</strong>. Springer, 2018.</p>
 </div>
-<div id="exercise" class="section level1">
+<div id="exercise" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Exercise</h1>
-<div id="library-size" class="section level2">
+<div id="library-size" class="section level2" number="1.1">
 <h2><span class="header-section-number">1.1</span> Library size</h2>
 <p>Draw histogram of library size</p>
+<pre class="r"><code>library(phyloseq)
+library(tidyverse)
+load(&#39;./data/Mice_csec.RData&#39;)
+
+libsize &lt;- phyloseq::sample_sums(phyX)
+hist(libsize)</code></pre>
+<p><img src="prepro_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<pre class="r"><code># or the tidyverse way
+## phyX %&gt;% sample_sums() %&gt;% hist()</code></pre>
 </div>
-<div id="preprocessing" class="section level2">
+<div id="preprocessing" class="section level2" number="1.2">
 <h2><span class="header-section-number">1.2</span> Preprocessing</h2>
-<p>Play around with different preprocessing techniques and collect the beta-diversity measure of the different versions. Correlate those to see what happends. Inspiration for code below. Try to change the beta-diversity measure and see what happends.</p>
+<p>Play around with different preprocessing techniques and collect the
+beta-diversity measure of the different versions. Correlate those to see
+what happens. Inspiration for code below. Try to change the
+beta-diversity measure - for instance to (w)unifrac - and see what
+happens.</p>
 <pre class="r"><code>library(phyloseq)
 load(&#39;./data/Mice_csec.RData&#39;)
 
@@ -444,7 +490,7 @@ cor(dist_df)</code></pre>
 
 // add bootstrap table styles to pandoc tables
 function bootstrapStylePandocTables() {
-  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
 }
 $(document).ready(function () {
   bootstrapStylePandocTables();
@@ -452,6 +498,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

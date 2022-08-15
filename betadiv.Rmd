@@ -94,7 +94,7 @@ The interpretation of ordination plots are simple: Two points in close proximity
 
 Compute all four diversity measures directly on the _Rat_ dataset. You might want to include some preprocessing.
 
-```{r, eval = F}
+```{r, eval = T}
 library(phyloseq)
 load('./data/Rats_inulin.RData'); 
 
@@ -122,9 +122,13 @@ g1 <- ggplot(data = df, aes(Axis.1,Axis.2,
   stat_ellipse() + 
   facet_wrap(~method,scales = 'free')
 
-pdf('./figs/PCoA.pdf', width = 8, height = 6)
 g1 +geom_hline(yintercept = 0) + geom_vline(xintercept = 0)  + theme_minimal()
-dev.off()
+```
+
+... If you want to save the (last produced) plot
+
+```{r, eval=FALSE, include=TRUE}
+ggsave('ThisIsFigure2formanus.pdf')
 ```
 
 
@@ -157,7 +161,7 @@ cor(dist_df)
 
 The experiment is longitudinal with before and after diet (sausage) intervention. Try to infer this on the PCoA plot. 
 
-```{r,eval = F}
+```{r,eval = T}
 ggplot(data = df, aes(Axis.1,Axis.2, 
                       color = factor(Description),
                       shape = time, 
@@ -189,7 +193,7 @@ There is a new R-modelling paragdigme making it easy to do many things at once.
 If you find the coding trivial, it might be worth looking into, as it - after some headache - makes life easier. However, it is not a microbiome-thing, only R, and you can achieve the same with the more basic commands. 
 Below is shown how the linear models from the chunk above is computed for all methods using the tidyverse and broom packages. 
 
-```{r, eval=F}
+```{r, eval=T, message=FALSE}
 library(tidyverse)
 library(broom)
 df %>% 

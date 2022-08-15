@@ -1,0 +1,227 @@
+---
+title: "ANOVA on Beta Diversity"
+output: 
+  html_document:
+    number_sections: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(knitr.kable.NA = '')
+```
+
+Statistical inference, is the term used for veryfying how likely the _observed_ difference is due to chance (the null hypothesis). The t-test is one of the most used methods for this purpose, and having univariate response variables makes statistical inference straight-forward. 
+
+For multivariate data things become slightly more complicated. However, when dealing with beta-diversity type of data, there is a nice one-2-one relationship with ANOVA for univariate data. 
+
+The general model a single response $y$ from a design $D$ for ANVOA is 
+
+$$\mathbf{y} = \mathbf{D}\mathbf{\beta} + \mathbf{e}$$
+where $\mathbf{\beta}$ is the model parameters and $\mathbf{e}$ the residuals. 
+
+In ANOVA the basic principal is to compare the _size_ of the residuals with the size of the modelled part $\mathbf{\hat{y}} = \mathbf{D}\mathbf{\beta}$. Where size is a summed of squares thing: $SS_{resid} = \sum(e^2) = \mathbf{e}^T\mathbf{e}$ and $SS_{model} = \sum(\hat{y}^2) = \mathbf{y}^T\mathbf{y} - \mathbf{e}^T\mathbf{e}$ 
+
+For multivariate matrices as response variables this formula extends to: 
+
+$$\mathbf{Y} = D \mathbf{\beta} + \mathbf{E} = \hat{\mathbf{Y}} + \mathbf{E}$$
+
+with Sums of Squares being: 
+
+$$SS_{total} = SS_{model} + SS_{resid}$$
+
+$$tr(\mathbf{Y}'\mathbf{Y}) = tr(\mathbf{\hat{Y}'}\mathbf{\hat{Y}}) + tr(\mathbf{E}'\mathbf{E})$$
+Due to trace invariance this is the same as: 
+
+$$tr(\mathbf{Y}\mathbf{Y}') = tr(\mathbf{\hat{Y}}\mathbf{\hat{Y}}') + tr(\mathbf{E}\mathbf{E}')$$
+What we see here is that the data representation $\mathbf{Y}\mathbf{Y}'$ is exactly a similar representation as the $\beta$ diversity. Namely, a symmetric sample by sample matrix. Furhter utilizing the definition of the so-called hat matrix: 
+
+$$ \mathbf{H} = \mathbf{D}(\mathbf{D}'\mathbf{D})^{-1}\mathbf{D}$$
+which puts a hat on $\mathbf{Y}$: $\mathbf{\hat{Y}} = \mathbf{H}\mathbf{Y}$. 
+
+This, combined with __Pytagoras__, orthogonality between the model and the residuals, shows that the only thing needed to be able to do multivariate anova is the sample by sample matrix. 
+
+the vegan library with the function adonis() utilizes this to make linear models on $\beta$ diversity. However, there are no analytical _null_ distribution for testing, why this is constructed by random permutation. 
+
+
+# Compute sample by sample distance matrix {-}
+
+Here the pairwise sample distance is calculated, and printed for the first three samples. 
+
+```{r, message=FALSE}
+library(vegan)
+library(phyloseq)
+load('./data/Rats_inulin.RData')
+phyX <- transform_sample_counts(phyX, function(x) x  / sum(x))
+D_BC <- phyloseq::distance(phyX, "bray")
+as.matrix(D_BC)[1:3,1:3]
+```
+
+The diagonal is zeros. Although the formulations above works on _similarity matrices_ the adonis() function takes _dissimilarities_ as input. 
+
+Here is a linear model depending on the factor time: 
+
+```{r}
+mdl1 <- adonis2(D_BC ~ time, data = data.frame(sample_data(phyX)))
+mdl1
+```
+
+However, more interestingly it is to compare the effect of diet _in combination_ with time
+
+```{r}
+mdl<- adonis2(D_BC ~ time*Description, data = data.frame(sample_data(phyX)))
+mdl
+SSQ <- mdl$aov.tab$SumsOfSqs
+tbanova <- data.frame(source = rownames(mdl$aov.tab), 
+                      SSQrel = 100*SSQ/SSQ[5], 
+                      pv = mdl$aov.tab$`Pr(>F)`)
+knitr::kable(tbanova,digits = c(0,1,5))
+```
+
+Time is naturally the most influencial factor, but not supprisingly, The diet (_Decription_) contributes somewhat 10 percent of the variantion, but further strongly depends on time. Thinking about the design, this does make a lot of sense. 
+
+
+# Exercises
+
+## Permanova
+
+Run the permanova / adonis tests above. 
+
+## Different beta-div methods
+
+Try to exchange the method for $\beta$ diversity and check what happends. 
+
+## Differences at baseline? 
+
+At time _start_ no dietarry intervention has been introduced, and hence, no differences between diet-groups are expected. Test if this is the case. 
+
+## Differences at end depending on diet? 
+
+At time _slut_ we want to see if the dietary intervention made a difference. Specify data, ordinate and plot, and model for such an analysis. 
+
+## Make all three pairwise comparisons
+
+Seems like there is a lot of difference due to diet, but which group is most different? Are there any difference between the two sausage-based diets? HINT: Below some code for inspiration. But it is stripped for preprocessing! That you need to do your self!
+
+Furhter, which statistical metric (output from the adonis model) describes the difference between diets? 
+
+```{r, eval = F}
+phyXss <- subset_samples(phyX, time=='Slut')
+models <- list()
+comparison <- vector()
+c <- 0
+for (j in unique(data.frame(sample_data(phyXss))$Description)){
+  c <- c+1
+  phyXssj <- subset_samples(phyXss,data.frame(sample_data(phyXss))$Description!=j)
+  D_BC <- phyloseq::distance(phyXssj, "bray")
+  models[[c]] <- adonis(D_BC ~ Description, data = data.frame(sample_data(phyXssj)))
+  comparison[c] <- paste('Not with', j)
+}
+```
+
+## Which family carries the differences? 
+
+In order to investigate for which taxonomic family the differences are more pronounced, try to subset taxa based on family (Rank5) on for families with at least a few OTUs. Do that for all families, run the model and collect results. HINT: some code below for inspiration, but please make sure you understand what goes on in each step! 
+
+```{r,eval = F}
+r5 <- data.frame(tax_table(phyXss))$Rank5
+tb_r5 <- table(r5)
+results <- data.frame()
+for (j in names(tb_r5[tb_r5>3])){
+  print(j)
+  ic <- r5==j & !is.na(r5)
+  phyXssj <- subset_taxa(phyXss,ic)
+  phyXssj <- subset_samples(phyXssj, sample_sums(phyXssj)>0)
+  D_BC <- phyloseq::distance(phyXssj, "bray")
+  mdl <- adonis(D_BC ~ Description, data = data.frame(sample_data(phyXssj)))
+  results <- rbind(results, 
+                   data.frame(tax = j,
+                              n_otu = as.numeric(tb_r5[j]), 
+                              mean_relabu = mean(taxa_sums(phyXssj)),
+                              MSdiet = mdl$aov.tab$MeanSqs[1],  
+                              MSres = mdl$aov.tab$MeanSqs[2],  
+                              Fval = mdl$aov.tab$F.Model[1],  
+                              Pval = mdl$aov.tab$`Pr(>F)`[1]))
+}
+print(results)
+```
+
+Eventually, this should return that Lactobacillaceae is not that important, while most of the other families are. 
+Select one particular family and try to narrow down the particular differences. For instance, the family; Rikenellaceae with only 7 OTUs and a fair abundance coverage, are pretty good in discriminating the diets. Below is some code which takes you to some tiny details. 
+
+```{r, eval = F}
+ic <- r5=='f__Rikenellaceae' & !is.na(r5)
+phyXssj <- subset_taxa(phyXss,ic)
+ord <- ordinate(phyXssj,'NMDS','bray')
+plot_ordination(phyXssj,ord, color = 'Description') + stat_ellipse()
+plot_ordination(phyXssj,ord, type = 'taxa')
+
+# An explicite analysis 
+df <- data.frame(t(otu_table(phyXssj)), sample_data(phyXssj))
+ggplot(data = df, aes(OTU_76, OTU_352 + 0.001, color = Description)) + 
+  geom_point() + 
+  scale_x_log10() + 
+  scale_y_log10() + 
+  stat_ellipse()
+```
+
+## Metabolite correlations
+
+At the end of trial fecal water metabolomics is included. Investigate whether some of these can explain the beta diversity variation. Further, try to make a visualization where metabolite levels is included. 
+
+## Microbiome - Diet - Metabolome interactions
+
+Furhter, investigate if, for some metabolites, the association between metabolites and microbiome is only introduced by the design. I.e. when accounting for the effect of the design, the metabolite-microbiome associations becomes weaker. 
+
+```{r,eval = F}
+phyXsel <- subset_samples(phyX, time == 'Slut')
+D_BC <- phyloseq::distance(phyXsel, "bray")
+
+adonis(D_BC ~ Fructose, data = data.frame(sample_data(phyXsel)))
+adonis(D_BC ~ Description + Fructose, data = data.frame(sample_data(phyXsel)))
+```
+
+## Wihtin subject memory
+
+Within each diet group, test if there is memory in microbiome over time. That is, how large degree of the variation is due to the individual mice? Is the degree of memory the same for the diffent diets? 
+
+```{r, eval = F, include = F}
+phyXs <- subset_samples(phyX, Description=='Chow')
+m1 <- adonis(phyloseq::distance(phyXs, "bray") ~ ID, data = data.frame(sample_data(phyXs)))
+phyXs <- subset_samples(phyX, Description=='Frankfurter+inulin')
+m2 <- adonis(phyloseq::distance(phyXs, "bray") ~ ID, data = data.frame(sample_data(phyXs)))
+phyXs <- subset_samples(phyX, Description=='Frankfurter')
+m3 <- adonis(phyloseq::distance(phyXs, "bray") ~ ID, data = data.frame(sample_data(phyXs)))
+
+```
+
+## Is differential Abundance results depending on the phylogenetic tree? 
+
+The effect size in from _differential abundance testing_ is a vector of length _p_ (the number of variables). In order to answer the question _"is the DA results depending on the phylogentic tree?"_ we can use the adonis set, just flipping the problem to a _p_ by _p_ similarity matrix based on the the phylotree and then regress on to the DA information. 
+
+```{r,eval = F}
+library(phyloseq)
+library(DESeq2)
+load('./data/Mice_csec.RData')
+# do DA with DEseq2
+birhtmode_ds <- phyloseq_to_deseq2(phyX, ~ Birth_mode)
+res <- DESeq(birhtmode_ds, test="Wald", fitType="parametric")
+tb <- results(res, cooksCutoff = FALSE)
+
+# run adonis versus tree
+tree <- ape::cophenetic.phylo(phy_tree(phyX))
+# look at the tree
+tree[1:3,1:3] 
+m <- adonis2(tree ~ tb$log2FoldChange>0,permutations = 100)
+ms
+```
+
+
+
+
+# References {-}
+
+McArdle, Brian H., and Marti J. Anderson. __Fitting multivariate models to community data: a comment on distance‐based redundancy analysis__ Ecology 82, no. 1 (2001): 290-297.
+
+Xia, Yinglin, Jun Sun, and Ding-Geng Chen. __Statistical analysis of microbiome data with R__. Springer, 2018. Chapter 6. 
+
+

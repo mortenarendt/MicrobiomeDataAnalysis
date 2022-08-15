@@ -13,7 +13,8 @@
 
 <title>Differential Abundance Testing</title>
 
-<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
@@ -59,6 +60,7 @@ if (window.hljs) {
 
 
 
+
 <style type = "text/css">
 .main-container {
   max-width: 940px;
@@ -79,6 +81,9 @@ button.code-folding-btn:focus {
 }
 summary {
   display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
 }
 pre code {
   padding: 0;
@@ -231,7 +236,7 @@ $(document).ready(function () {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -247,7 +252,7 @@ $(document).ready(function () {
   <a href="pkgs.html">Installation</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Descriptives
      
     <span class="caret"></span>
@@ -265,7 +270,7 @@ $(document).ready(function () {
   </ul>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Statistical inference
      
     <span class="caret"></span>
@@ -280,7 +285,7 @@ $(document).ready(function () {
   </ul>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Supervised Multivariate models
      
     <span class="caret"></span>
@@ -314,34 +319,56 @@ $(document).ready(function () {
 </div>
 
 
-<p>Having a study design in with there are two (or more) groups of samples, say male/female, diet1/diet2, etc. one is often interested in knowing:</p>
+<p>Having a study design in with there are two (or more) groups of
+samples, say male/female, diet1/diet2, etc. one is often interested in
+knowing:</p>
 <ul>
 <li>Is there a difference between the groups?</li>
 <li>Which bacteria / OTUs are most different between the groups?</li>
 </ul>
-<p>This concept is within microbiome statistics refered to as <strong>Differential Abundance Testing</strong>.</p>
-<p>The principal behind is very simple: Given an OTU matrix of <em>p</em> different OTUs;</p>
+<p>This concept is within microbiome statistics refered to as
+<strong>Differential Abundance Testing</strong>.</p>
+<p>The principal behind is very simple: Given an OTU matrix of
+<em>p</em> different OTUs;</p>
 <ol style="list-style-type: decimal">
-<li><p>Perform <em>p</em> univariate tests assigning an effect size and a p-value to each OTU on the question of differential abundance. That could for example be based on a simple t-test</p></li>
-<li><p>Arrange the <em>p</em> tests according to the p-value going from the smallest (most different OTU) to the largest (least different OTU)</p></li>
-<li><p>Deside a cut point for which OTUs to be assigned <em>discoveries</em>. I.e. OTUs with p-values below <span class="math inline">\(p_{cut}\)</span> to be discoveries. This task is known as multiple-testing-correction, and is a general statistical concept.</p></li>
+<li><p>Perform <em>p</em> univariate tests assigning an effect size and
+a p-value to each OTU on the question of differential abundance. That
+could for example be based on a simple t-test</p></li>
+<li><p>Arrange the <em>p</em> tests according to the p-value going from
+the smallest (most different OTU) to the largest (least different
+OTU)</p></li>
+<li><p>Deside a cut point for which OTUs to be assigned
+<em>discoveries</em>. I.e. OTUs with p-values below <span
+class="math inline">\(p_{cut}\)</span> to be discoveries. This task is
+known as multiple-testing-correction, and is a general statistical
+concept.</p></li>
 </ol>
-<p>Given that todays microbiome studies generates a large number of OTUs, <em>p</em> often higher than 1.000 there are two concerns:</p>
+<p>Given that todays microbiome studies generates a large number of
+OTUs, <em>p</em> often higher than 1.000 there are two concerns:</p>
 <ul>
 <li>Choose a reliable and powerful univariate model</li>
 <li>Boost the discovery chance by filter and/or aglommeration</li>
 </ul>
-<p>The paper by Thorsen et al 2016 investigates a range of statistical strategies on both the ability to sort the OTUs from the most discriminatory to the least, as well as the false discovery rate control. Russel et al (2019) have streamlined this approach for selecting the relevant statistical engine, which nicely screens +20 methods in very few lines of code (see <a href="https://github.com/Russel88/DAtest">DAtest</a> for code)</p>
+<p>The paper by Thorsen et al 2016 investigates a range of statistical
+strategies on both the ability to sort the OTUs from the most
+discriminatory to the least, as well as the false discovery rate
+control. Russel et al (2019) have streamlined this approach for
+selecting the relevant statistical engine, which nicely screens +20
+methods in very few lines of code (see <a
+href="https://github.com/Russel88/DAtest">DAtest</a> for code)</p>
 <p>(see refs below)</p>
-<div id="exercise" class="section level1">
+<div id="exercise" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Exercise</h1>
-<div id="setting-up-data" class="section level2">
+<div id="setting-up-data" class="section level2" number="1.1">
 <h2><span class="header-section-number">1.1</span> Setting up data</h2>
-<p>Rarefy the <em>mice birth mode</em> data to even depth, and use the phyloseq_to_deseq2() function to convert format including birht mode as class information.</p>
+<p>Rarefy the <em>mice birth mode</em> data to even depth, and use the
+phyloseq_to_deseq2() function to convert format including birht mode as
+class information.</p>
 </div>
-<div id="deseq" class="section level2">
+<div id="deseq" class="section level2" number="1.2">
 <h2><span class="header-section-number">1.2</span> DEseq</h2>
-<p>Perform DA test using DESeq() from the DESeq2 library. You might need to install this library in advance.</p>
+<p>Perform DA test using DESeq() from the DESeq2 library. You might need
+to install this library in advance.</p>
 <pre class="r"><code>library(phyloseq)
 library(DESeq2)
 load(&#39;./data/Mice_csec.RData&#39;)
@@ -350,9 +377,12 @@ birhtmode_ds &lt;- phyloseq_to_deseq2(phyX, ~ Birth_mode)
 
 res &lt;- DESeq(birhtmode_ds, test=&quot;Wald&quot;, fitType=&quot;parametric&quot;)</code></pre>
 </div>
-<div id="interpret-results" class="section level2">
-<h2><span class="header-section-number">1.3</span> Interpret results</h2>
-<p>Extract results and combine with tax information (from tax_table()) as well as read frequency per OTU as well as presence/absence percentage.</p>
+<div id="interpret-results" class="section level2" number="1.3">
+<h2><span class="header-section-number">1.3</span> Interpret
+results</h2>
+<p>Extract results and combine with tax information (from tax_table())
+as well as read frequency per OTU as well as presence/absence
+percentage.</p>
 <pre class="r"><code>tb &lt;- results(res, cooksCutoff = FALSE)
 txtb &lt;- data.frame(tax_table(phyX))
 
@@ -363,30 +393,43 @@ df_res &lt;- data.frame(est = tb$log2FoldChange, se = tb$lfcSE, pv = tb$pvalue, 
 df_res &lt;- cbind(df_res, txtb)
 df_res$name &lt;- rownames(df_res)</code></pre>
 </div>
-<div id="is-this-different-from-null" class="section level2">
-<h2><span class="header-section-number">1.4</span> Is this different from <em>null</em>?</h2>
-<p>Plot a histogram of the unadjusted p-values. How should this plot look like if there were <em>no</em> birth mode information in the data?</p>
+<div id="is-this-different-from-null" class="section level2"
+number="1.4">
+<h2><span class="header-section-number">1.4</span> Is this different
+from <em>null</em>?</h2>
+<p>Plot a histogram of the unadjusted p-values. How should this plot
+look like if there were <em>no</em> birth mode information in the
+data?</p>
 </div>
-<div id="vulcano-plot" class="section level2">
+<div id="vulcano-plot" class="section level2" number="1.5">
 <h2><span class="header-section-number">1.5</span> Vulcano plot</h2>
-<p>Plot a vulcano plot of the results. Try to facet out / or color according to a taxonomic level to get deeper insight on which bacteria that are affected the most.</p>
+<p>Plot a vulcano plot of the results. Try to facet out / or color
+according to a taxonomic level to get deeper insight on which bacteria
+that are affected the most.</p>
 <pre class="r"><code>ggplot(data = df_res, aes(est,-log10(pv), color = Rank4)) + 
   geom_point() + 
   geom_text(data = df_res[df_res$pv&lt;0.0001,], aes(label = name), color = &#39;black&#39;) + # put label on the top stuff
   theme(legend.position = &#39;none&#39;) + 
   facet_wrap(~Rank3)</code></pre>
 </div>
-<div id="rarecommon-vs-difference" class="section level2">
-<h2><span class="header-section-number">1.6</span> rare/common vs difference</h2>
-<p>Interpret the results as a function of read-frequency or presence/absence. Is it the dominating species that are most different?</p>
+<div id="rarecommon-vs-difference" class="section level2" number="1.6">
+<h2><span class="header-section-number">1.6</span> rare/common vs
+difference</h2>
+<p>Interpret the results as a function of read-frequency or
+presence/absence. Is it the dominating species that are most
+different?</p>
 </div>
-<div id="effect-of-agglomoration" class="section level2">
-<h2><span class="header-section-number">1.7</span> Effect of agglomoration</h2>
-<p>Perform tax glommeration (tax_glom()) at some taxonomic level, and re-run the analysis. Do you get the same results?</p>
+<div id="effect-of-agglomoration" class="section level2" number="1.7">
+<h2><span class="header-section-number">1.7</span> Effect of
+agglomoration</h2>
+<p>Perform tax glommeration (tax_glom()) at some taxonomic level, and
+re-run the analysis. Do you get the same results?</p>
 </div>
-<div id="metagenomeseq" class="section level2">
+<div id="metagenomeseq" class="section level2" number="1.8">
 <h2><span class="header-section-number">1.8</span> Metagenomeseq</h2>
-<p>Do exactly the same just using t-test, wilcox tests as well as metagenomeseq’s featureModel() and compare the results? Below are some code-inspiration.</p>
+<p>Do exactly the same just using t-test, wilcox tests as well as
+metagenomeseq’s featureModel() and compare the results? Below are some
+code-inspiration.</p>
 <pre class="r"><code>library(metagenomeSeq)
 mgsdata &lt;- phyloseq_to_metagenomeSeq(phyX)
 mgsdata &lt;- cumNorm(mgsdata, p=.5)
@@ -394,18 +437,65 @@ mod &lt;- model.matrix(~1+Birth_mode, data=pData(mgsdata))
 mgsfit &lt;- fitFeatureModel(obj = mgsdata,mod = mod)
 
 predictor &lt;- sample_data(phyX)$Birth_mode
+# do some preprocessing
 count_table &lt;- log(t(otu_table(phyX)) + 1)
 count_table &lt;- apply(count_table, 2, function(x) x/sum(x))
-pv_t &lt;- apply(count_table, 2,function(x) t.test(x ~ predictor)$p.value)</code></pre>
+
+# use tidyverse and broom to get test
+tb_ttest &lt;- count_table %&gt;% 
+  cbind(predictor) %&gt;% 
+  data.frame() %&gt;% 
+  gather(otu,ra,-predictor) %&gt;% 
+  group_by(otu) %&gt;% 
+  do(t.test(data = ., ra~predictor) %&gt;% tidy)</code></pre>
+<pre class="r"><code>allres &lt;- bind_rows(
+  data.frame(estimate = mgsfit@fitZeroLogNormal$logFC,
+             p.value = mgsfit@pvalues, 
+             otu = mgsfit@taxa,
+             test = &#39;metagenomeseq&#39;),
+  data.frame(estimate = tb$log2FoldChange, 
+             p.value = tb$pvalue, 
+             otu = rownames(tb),
+             test = &#39;DESeq2&#39;),
+  tb_ttest %&gt;% mutate(test = &#39;t-test&#39;)
+  )
+
+#plot it! 
+ggplot(data = allres, aes(estimate,-log10(p.value), label = otu)) + 
+  geom_point() + 
+  geom_text(data = allres[allres$p.value&lt;10e-7 &amp; !is.na(allres$p.value),]) +
+  facet_wrap(~test,nrow =  1, scales = &#39;free_x&#39;)</code></pre>
+<p><img src="DA_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
 </div>
 </div>
 <div id="references" class="section level1 unnumbered">
-<h1>References</h1>
-<p><a href="https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-016-0208-8">Thorsen, Jonathan, Asker Brejnrod, Martin Mortensen, Morten A. Rasmussen, Jakob Stokholm, Waleed Abu Al-Soud, Søren Sørensen, Hans Bisgaard, and Johannes Waage. <strong>Large-scale benchmarking reveals false discoveries and count transformation sensitivity in 16S rRNA gene amplicon data analysis methods used in microbiome studies</strong>, <em>Microbiome</em> 4, no. 1 (2016): 62.</a></p>
-<p><a href="http://www.nature.com/nmeth/journal/v10/n12/full/nmeth.2658.html">Paulson, Joseph N., O. Colin Stine, Héctor Corrada Bravo, and Mihai Pop. <strong>Differential abundance analysis for microbial marker-gene surveys</strong>. Nature methods 10, no. 12 (2013): 1200.</a></p>
-<p><a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8">Love, Michael I., Wolfgang Huber, and Simon Anders. <strong>Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2</strong>. Genome biology 15.12 (2014): 550.</a></p>
-<p><a href="https://www.biorxiv.org/content/biorxiv/early/2018/01/02/241802.full.pdf">Russel, Jakob, Jonathan Thorsen, Asker D. Brejnrod, Hans Bisgaard, Soren J. Sorensen, and Mette Burmolle. <strong>DAtest: a framework for choosing differential abundance or expression method</strong>. bioRxiv (2018): 241802.</a></p>
-<p>Xia, Yinglin, Jun Sun, and Ding-Geng Chen. <strong>Statistical analysis of microbiome data with R</strong>. Springer, 2018.</p>
+<h1 class="unnumbered">References</h1>
+<p><a
+href="https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-016-0208-8">Thorsen,
+Jonathan, Asker Brejnrod, Martin Mortensen, Morten A. Rasmussen, Jakob
+Stokholm, Waleed Abu Al-Soud, Søren Sørensen, Hans Bisgaard, and
+Johannes Waage. <strong>Large-scale benchmarking reveals false
+discoveries and count transformation sensitivity in 16S rRNA gene
+amplicon data analysis methods used in microbiome studies</strong>,
+<em>Microbiome</em> 4, no. 1 (2016): 62.</a></p>
+<p><a
+href="http://www.nature.com/nmeth/journal/v10/n12/full/nmeth.2658.html">Paulson,
+Joseph N., O. Colin Stine, Héctor Corrada Bravo, and Mihai Pop.
+<strong>Differential abundance analysis for microbial marker-gene
+surveys</strong>. Nature methods 10, no. 12 (2013): 1200.</a></p>
+<p><a
+href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8">Love,
+Michael I., Wolfgang Huber, and Simon Anders. <strong>Moderated
+estimation of fold change and dispersion for RNA-seq data with
+DESeq2</strong>. Genome biology 15.12 (2014): 550.</a></p>
+<p><a
+href="https://www.biorxiv.org/content/biorxiv/early/2018/01/02/241802.full.pdf">Russel,
+Jakob, Jonathan Thorsen, Asker D. Brejnrod, Hans Bisgaard, Soren J.
+Sorensen, and Mette Burmolle. <strong>DAtest: a framework for choosing
+differential abundance or expression method</strong>. bioRxiv (2018):
+241802.</a></p>
+<p>Xia, Yinglin, Jun Sun, and Ding-Geng Chen. <strong>Statistical
+analysis of microbiome data with R</strong>. Springer, 2018.</p>
 </div>
 
 

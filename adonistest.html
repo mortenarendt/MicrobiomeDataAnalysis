@@ -1,34 +1,48 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
 
 <title>ANOVA on Beta Diversity</title>
 
-<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 
-<style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
-  pre:not([class]) {
-    background-color: white;
-  }
-</style>
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
 <script type="text/javascript">
 if (window.hljs) {
   hljs.configure({languages: []});
@@ -41,37 +55,11 @@ if (window.hljs) {
 
 
 
-<style type="text/css">
-h1 {
-  font-size: 34px;
-}
-h1.title {
-  font-size: 38px;
-}
-h2 {
-  font-size: 30px;
-}
-h3 {
-  font-size: 24px;
-}
-h4 {
-  font-size: 18px;
-}
-h5 {
-  font-size: 16px;
-}
-h6 {
-  font-size: 12px;
-}
-.table th:not([align]) {
-  text-align: left;
-}
-</style>
 
 
-</head>
 
-<body>
+
+
 
 <style type = "text/css">
 .main-container {
@@ -79,13 +67,8 @@ h6 {
   margin-left: auto;
   margin-right: auto;
 }
-code {
-  color: inherit;
-  background-color: rgba(0, 0, 0, 0.04);
-}
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -99,40 +82,16 @@ button.code-folding-btn:focus {
 summary {
   display: list-item;
 }
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
 </style>
 
 
 <style type="text/css">
-/* padding for bootstrap navbar */
-body {
-  padding-top: 51px;
-  padding-bottom: 40px;
-}
-/* offset scroll position for anchor links (for fixed navbar)  */
-.section h1 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h2 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h3 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h4 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h5 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h6 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
 .dropdown-submenu {
   position: relative;
 }
@@ -160,7 +119,7 @@ body {
   margin-right: -10px;
 }
 .dropdown-submenu:hover>a:after {
-  border-left-color: #ffffff;
+  border-left-color: #adb5bd;
 }
 .dropdown-submenu.pull-left {
   float: none;
@@ -172,7 +131,7 @@ body {
 }
 </style>
 
-<script>
+<script type="text/javascript">
 // manage active state of menu based on current page
 $(document).ready(function () {
   // active menu anchor
@@ -183,14 +142,25 @@ $(document).ready(function () {
   var menuAnchor = $('a[href="' + href + '"]');
 
   // mark it active
-  menuAnchor.parent().addClass('active');
+  menuAnchor.tab('show');
 
   // if it's got a parent navbar menu mark it active as well
   menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
 });
 </script>
-
-<div class="container-fluid main-container">
 
 <!-- tabsets -->
 
@@ -200,7 +170,6 @@ $(document).ready(function () {
   max-height: 500px;
   min-height: 44px;
   overflow-y: auto;
-  background: white;
   border: 1px solid #ddd;
   border-radius: 4px;
 }
@@ -236,6 +205,7 @@ $(document).ready(function () {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -248,20 +218,17 @@ $(document).ready(function () {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
 
 
 
@@ -269,7 +236,7 @@ $(document).ready(function () {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -285,7 +252,7 @@ $(document).ready(function () {
   <a href="pkgs.html">Installation</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Descriptives
      
     <span class="caret"></span>
@@ -303,7 +270,7 @@ $(document).ready(function () {
   </ul>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Statistical inference
      
     <span class="caret"></span>
@@ -318,7 +285,7 @@ $(document).ready(function () {
   </ul>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Supervised Multivariate models
      
     <span class="caret"></span>
@@ -343,7 +310,7 @@ $(document).ready(function () {
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-<div class="fluid-row" id="header">
+<div id="header">
 
 
 
@@ -352,73 +319,109 @@ $(document).ready(function () {
 </div>
 
 
-<p>Statistical inference, is the term used for veryfying how likely the <em>observed</em> difference is due to chance (the null hypothesis). The t-test is one of the most used methods for this purpose, and having univariate response variables makes statistical inference straight-forward.</p>
-<p>For multivariate data things become slightly more complicated. However, when dealing with beta-diversity type of data, there is a nice one-2-one relationship with ANOVA for univariate data.</p>
-<p>The general model a single response <span class="math inline">\(y\)</span> from a design <span class="math inline">\(D\)</span> for ANVOA is</p>
-<p><span class="math display">\[\mathbf{y} = \mathbf{D}\mathbf{\beta} + \mathbf{e}\]</span> where <span class="math inline">\(\mathbf{\beta}\)</span> is the model parameters and <span class="math inline">\(\mathbf{e}\)</span> the residuals.</p>
-<p>In ANOVA the basic principal is to compare the <em>size</em> of the residuals with the size of the modelled part <span class="math inline">\(\mathbf{\hat{y}} = \mathbf{D}\mathbf{\beta}\)</span>. Where size is a summed of squares thing: <span class="math inline">\(SS_{resid} = \sum(e^2) = \mathbf{e}^T\mathbf{e}\)</span> and <span class="math inline">\(SS_{model} = \sum(\hat{y}^2) = \mathbf{y}^T\mathbf{y} - \mathbf{e}^T\mathbf{e}\)</span></p>
-<p>For multivariate matrices as response variables this formula extends to:</p>
-<p><span class="math display">\[\mathbf{Y} = D \mathbf{\beta} + \mathbf{E} = \hat{\mathbf{Y}} + \mathbf{E}\]</span></p>
+<p>Statistical inference, is the term used for veryfying how likely the
+<em>observed</em> difference is due to chance (the null hypothesis). The
+t-test is one of the most used methods for this purpose, and having
+univariate response variables makes statistical inference
+straight-forward.</p>
+<p>For multivariate data things become slightly more complicated.
+However, when dealing with beta-diversity type of data, there is a nice
+one-2-one relationship with ANOVA for univariate data.</p>
+<p>The general model a single response <span
+class="math inline">\(y\)</span> from a design <span
+class="math inline">\(D\)</span> for ANVOA is</p>
+<p><span class="math display">\[\mathbf{y} = \mathbf{D}\mathbf{\beta} +
+\mathbf{e}\]</span> where <span
+class="math inline">\(\mathbf{\beta}\)</span> is the model parameters
+and <span class="math inline">\(\mathbf{e}\)</span> the residuals.</p>
+<p>In ANOVA the basic principal is to compare the <em>size</em> of the
+residuals with the size of the modelled part <span
+class="math inline">\(\mathbf{\hat{y}} =
+\mathbf{D}\mathbf{\beta}\)</span>. Where size is a summed of squares
+thing: <span class="math inline">\(SS_{resid} = \sum(e^2) =
+\mathbf{e}^T\mathbf{e}\)</span> and <span
+class="math inline">\(SS_{model} = \sum(\hat{y}^2) =
+\mathbf{y}^T\mathbf{y} - \mathbf{e}^T\mathbf{e}\)</span></p>
+<p>For multivariate matrices as response variables this formula extends
+to:</p>
+<p><span class="math display">\[\mathbf{Y} = D \mathbf{\beta} +
+\mathbf{E} = \hat{\mathbf{Y}} + \mathbf{E}\]</span></p>
 <p>with Sums of Squares being:</p>
-<p><span class="math display">\[SS_{total} = SS_{model} + SS_{resid}\]</span></p>
-<p><span class="math display">\[tr(\mathbf{Y}&#39;\mathbf{Y}) = tr(\mathbf{\hat{Y}&#39;}\mathbf{\hat{Y}}) + tr(\mathbf{E}&#39;\mathbf{E})\]</span> Due to trace invariance this is the same as:</p>
-<p><span class="math display">\[tr(\mathbf{Y}\mathbf{Y}&#39;) = tr(\mathbf{\hat{Y}}\mathbf{\hat{Y}}&#39;) + tr(\mathbf{E}\mathbf{E}&#39;)\]</span> What we see here is that the data representation <span class="math inline">\(\mathbf{Y}\mathbf{Y}&#39;\)</span> is exactly a similar representation as the <span class="math inline">\(\beta\)</span> diversity. Namely, a symmetric sample by sample matrix. Furhter utilizing the definition of the so-called hat matrix:</p>
-<p><span class="math display">\[ \mathbf{H} = \mathbf{D}(\mathbf{D}&#39;\mathbf{D})^{-1}\mathbf{D}\]</span> which puts a hat on <span class="math inline">\(\mathbf{Y}\)</span>: <span class="math inline">\(\mathbf{\hat{Y}} = \mathbf{H}\mathbf{Y}\)</span>.</p>
-<p>This, combined with <strong>Pytagoras</strong>, orthogonality between the model and the residuals, shows that the only thing needed to be able to do multivariate anova is the sample by sample matrix.</p>
-<p>the vegan library with the function adonis() utilizes this to make linear models on <span class="math inline">\(\beta\)</span> diversity. However, there are no analytical <em>null</em> distribution for testing, why this is constructed by random permutation.</p>
-<div id="compute-sample-by-sample-distance-matrix" class="section level1 unnumbered">
-<h1>Compute sample by sample distance matrix</h1>
-<p>Here the pairwise sample distance is calculated, and printed for the first three samples.</p>
+<p><span class="math display">\[SS_{total} = SS_{model} +
+SS_{resid}\]</span></p>
+<p><span class="math display">\[tr(\mathbf{Y}&#39;\mathbf{Y}) =
+tr(\mathbf{\hat{Y}&#39;}\mathbf{\hat{Y}}) +
+tr(\mathbf{E}&#39;\mathbf{E})\]</span> Due to trace invariance this is
+the same as:</p>
+<p><span class="math display">\[tr(\mathbf{Y}\mathbf{Y}&#39;) =
+tr(\mathbf{\hat{Y}}\mathbf{\hat{Y}}&#39;) +
+tr(\mathbf{E}\mathbf{E}&#39;)\]</span> What we see here is that the data
+representation <span
+class="math inline">\(\mathbf{Y}\mathbf{Y}&#39;\)</span> is exactly a
+similar representation as the <span class="math inline">\(\beta\)</span>
+diversity. Namely, a symmetric sample by sample matrix. Furhter
+utilizing the definition of the so-called hat matrix:</p>
+<p><span class="math display">\[ \mathbf{H} =
+\mathbf{D}(\mathbf{D}&#39;\mathbf{D})^{-1}\mathbf{D}\]</span> which puts
+a hat on <span class="math inline">\(\mathbf{Y}\)</span>: <span
+class="math inline">\(\mathbf{\hat{Y}} =
+\mathbf{H}\mathbf{Y}\)</span>.</p>
+<p>This, combined with <strong>Pytagoras</strong>, orthogonality between
+the model and the residuals, shows that the only thing needed to be able
+to do multivariate anova is the sample by sample matrix.</p>
+<p>the vegan library with the function adonis() utilizes this to make
+linear models on <span class="math inline">\(\beta\)</span> diversity.
+However, there are no analytical <em>null</em> distribution for testing,
+why this is constructed by random permutation.</p>
+<div id="compute-sample-by-sample-distance-matrix"
+class="section level1 unnumbered">
+<h1 class="unnumbered">Compute sample by sample distance matrix</h1>
+<p>Here the pairwise sample distance is calculated, and printed for the
+first three samples.</p>
 <pre class="r"><code>library(vegan)
 library(phyloseq)
 load(&#39;./data/Rats_inulin.RData&#39;)
 phyX &lt;- transform_sample_counts(phyX, function(x) x  / sum(x))
 D_BC &lt;- phyloseq::distance(phyX, &quot;bray&quot;)
 as.matrix(D_BC)[1:3,1:3]</code></pre>
-<pre><code>##                    NXT005.REB.002.S92 NXT005.REB.003.S93
-## NXT005.REB.002.S92          0.0000000          0.3709460
-## NXT005.REB.003.S93          0.3709460          0.0000000
-## NXT005.REB.004.S94          0.5029163          0.3448253
-##                    NXT005.REB.004.S94
-## NXT005.REB.002.S92          0.5029163
-## NXT005.REB.003.S93          0.3448253
-## NXT005.REB.004.S94          0.0000000</code></pre>
-<p>The diagonal is zeros. Although the formulations above works on <em>similarity matrices</em> the adonis() function takes <em>dissimilarities</em> as input.</p>
+<pre><code>##                    NXT005.REB.002.S92 NXT005.REB.003.S93 NXT005.REB.004.S94
+## NXT005.REB.002.S92          0.0000000          0.3709460          0.5029163
+## NXT005.REB.003.S93          0.3709460          0.0000000          0.3448253
+## NXT005.REB.004.S94          0.5029163          0.3448253          0.0000000</code></pre>
+<p>The diagonal is zeros. Although the formulations above works on
+<em>similarity matrices</em> the adonis() function takes
+<em>dissimilarities</em> as input.</p>
 <p>Here is a linear model depending on the factor time:</p>
-<pre class="r"><code>adonis(D_BC ~ time, data = data.frame(sample_data(phyX)))</code></pre>
-<pre><code>## 
-## Call:
-## adonis(formula = D_BC ~ time, data = data.frame(sample_data(phyX))) 
-## 
+<pre class="r"><code>mdl1 &lt;- adonis2(D_BC ~ time, data = data.frame(sample_data(phyX)))
+mdl1</code></pre>
+<pre><code>## Permutation test for adonis under reduced model
+## Terms added sequentially (first to last)
 ## Permutation: free
 ## Number of permutations: 999
 ## 
-## Terms added sequentially (first to last)
-## 
-##           Df SumsOfSqs MeanSqs F.Model      R2 Pr(&gt;F)    
-## time       1    3.5067  3.5067  24.448 0.30017  0.001 ***
-## Residuals 57    8.1759  0.1434         0.69983           
-## Total     58   11.6826                 1.00000           
+## adonis2(formula = D_BC ~ time, data = data.frame(sample_data(phyX)))
+##          Df SumOfSqs      R2      F Pr(&gt;F)    
+## time      1   3.5067 0.30017 24.448  0.001 ***
+## Residual 57   8.1759 0.69983                  
+## Total    58  11.6826 1.00000                  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
-<p>However, more interestingly it is to compare the effect of diet in combination with time</p>
-<pre class="r"><code>mdl&lt;- adonis(D_BC ~ time*Description, data = data.frame(sample_data(phyX)))
+<p>However, more interestingly it is to compare the effect of diet
+<em>in combination</em> with time</p>
+<pre class="r"><code>mdl&lt;- adonis2(D_BC ~ time*Description, data = data.frame(sample_data(phyX)))
 mdl</code></pre>
-<pre><code>## 
-## Call:
-## adonis(formula = D_BC ~ time * Description, data = data.frame(sample_data(phyX))) 
-## 
+<pre><code>## Permutation test for adonis under reduced model
+## Terms added sequentially (first to last)
 ## Permutation: free
 ## Number of permutations: 999
 ## 
-## Terms added sequentially (first to last)
-## 
-##                  Df SumsOfSqs MeanSqs F.Model      R2 Pr(&gt;F)    
-## time              1    3.5067  3.5067  33.416 0.30017  0.001 ***
-## Description       2    1.2606  0.6303   6.006 0.10790  0.001 ***
-## time:Description  2    1.3535  0.6767   6.449 0.11585  0.001 ***
-## Residuals        53    5.5618  0.1049         0.47608           
-## Total            58   11.6826                 1.00000           
+## adonis2(formula = D_BC ~ time * Description, data = data.frame(sample_data(phyX)))
+##                  Df SumOfSqs      R2       F Pr(&gt;F)    
+## time              1   3.5067 0.30017 33.4165  0.001 ***
+## Description       2   1.2606 0.10790  6.0063  0.001 ***
+## time:Description  2   1.3535 0.11585  6.4489  0.001 ***
+## Residual         53   5.5618 0.47608                   
+## Total            58  11.6826 1.00000                   
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
 <pre class="r"><code>SSQ &lt;- mdl$aov.tab$SumsOfSqs
@@ -429,63 +432,56 @@ knitr::kable(tbanova,digits = c(0,1,5))</code></pre>
 <table>
 <thead>
 <tr class="header">
-<th align="left">source</th>
 <th align="right">SSQrel</th>
-<th align="right">pv</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td align="left">time</td>
-<td align="right">30.0</td>
-<td align="right">0.001</td>
-</tr>
-<tr class="even">
-<td align="left">Description</td>
-<td align="right">10.8</td>
-<td align="right">0.001</td>
-</tr>
-<tr class="odd">
-<td align="left">time:Description</td>
-<td align="right">11.6</td>
-<td align="right">0.001</td>
-</tr>
-<tr class="even">
-<td align="left">Residuals</td>
-<td align="right">47.6</td>
-<td align="right"></td>
-</tr>
-<tr class="odd">
-<td align="left">Total</td>
-<td align="right">100.0</td>
-<td align="right"></td>
-</tr>
 </tbody>
 </table>
-<p>Time is naturally the most influencial factor, but not supprisingly, The diet (<em>Decription</em>) contributes somewhat 10 percent of the variantion, but further strongly depends on time. Thinking about the design, this does make a lot of sense.</p>
+<p>Time is naturally the most influencial factor, but not supprisingly,
+The diet (<em>Decription</em>) contributes somewhat 10 percent of the
+variantion, but further strongly depends on time. Thinking about the
+design, this does make a lot of sense.</p>
 </div>
-<div id="exercises" class="section level1">
+<div id="exercises" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Exercises</h1>
-<div id="permanova" class="section level2">
+<div id="permanova" class="section level2" number="1.1">
 <h2><span class="header-section-number">1.1</span> Permanova</h2>
 <p>Run the permanova / adonis tests above.</p>
 </div>
-<div id="different-beta-div-methods" class="section level2">
-<h2><span class="header-section-number">1.2</span> Different beta-div methods</h2>
-<p>Try to exchange the method for <span class="math inline">\(\beta\)</span> diversity and check what happends.</p>
+<div id="different-beta-div-methods" class="section level2"
+number="1.2">
+<h2><span class="header-section-number">1.2</span> Different beta-div
+methods</h2>
+<p>Try to exchange the method for <span
+class="math inline">\(\beta\)</span> diversity and check what
+happends.</p>
 </div>
-<div id="differences-at-baseline" class="section level2">
-<h2><span class="header-section-number">1.3</span> Differences at baseline?</h2>
-<p>At time <em>start</em> no dietarry intervention has been introduced, and hence, no differences between diet-groups are expected. Test if this is the case.</p>
+<div id="differences-at-baseline" class="section level2" number="1.3">
+<h2><span class="header-section-number">1.3</span> Differences at
+baseline?</h2>
+<p>At time <em>start</em> no dietarry intervention has been introduced,
+and hence, no differences between diet-groups are expected. Test if this
+is the case.</p>
 </div>
-<div id="differences-at-end-depending-on-diet" class="section level2">
-<h2><span class="header-section-number">1.4</span> Differences at end depending on diet?</h2>
-<p>At time <em>slut</em> we want to see if the dietary intervention made a difference. Specify data, ordinate and plot, and model for such an analysis.</p>
+<div id="differences-at-end-depending-on-diet" class="section level2"
+number="1.4">
+<h2><span class="header-section-number">1.4</span> Differences at end
+depending on diet?</h2>
+<p>At time <em>slut</em> we want to see if the dietary intervention made
+a difference. Specify data, ordinate and plot, and model for such an
+analysis.</p>
 </div>
-<div id="make-all-three-pairwise-comparisons" class="section level2">
-<h2><span class="header-section-number">1.5</span> Make all three pairwise comparisons</h2>
-<p>Seems like there is a lot of difference due to diet, but which group is most different? Are there any difference between the two sausage-based diets? HINT: Below some code for inspiration. But it is stripped for preprocessing! That you need to do your self!</p>
-<p>Furhter, which statistical metric (output from the adonis model) describes the difference between diets?</p>
+<div id="make-all-three-pairwise-comparisons" class="section level2"
+number="1.5">
+<h2><span class="header-section-number">1.5</span> Make all three
+pairwise comparisons</h2>
+<p>Seems like there is a lot of difference due to diet, but which group
+is most different? Are there any difference between the two
+sausage-based diets? HINT: Below some code for inspiration. But it is
+stripped for preprocessing! That you need to do your self!</p>
+<p>Furhter, which statistical metric (output from the adonis model)
+describes the difference between diets?</p>
 <pre class="r"><code>phyXss &lt;- subset_samples(phyX, time==&#39;Slut&#39;)
 models &lt;- list()
 comparison &lt;- vector()
@@ -498,9 +494,15 @@ for (j in unique(data.frame(sample_data(phyXss))$Description)){
   comparison[c] &lt;- paste(&#39;Not with&#39;, j)
 }</code></pre>
 </div>
-<div id="which-family-carries-the-differences" class="section level2">
-<h2><span class="header-section-number">1.6</span> Which family carries the differences?</h2>
-<p>In order to investigate for which taxonomic family the differences are more pronounced, try to subset taxa based on family (Rank5) on for families with at least a few OTUs. Do that for all families, run the model and collect results. HINT: some code below for inspiration, but please make sure you understand what goes on in each step!</p>
+<div id="which-family-carries-the-differences" class="section level2"
+number="1.6">
+<h2><span class="header-section-number">1.6</span> Which family carries
+the differences?</h2>
+<p>In order to investigate for which taxonomic family the differences
+are more pronounced, try to subset taxa based on family (Rank5) on for
+families with at least a few OTUs. Do that for all families, run the
+model and collect results. HINT: some code below for inspiration, but
+please make sure you understand what goes on in each step!</p>
 <pre class="r"><code>r5 &lt;- data.frame(tax_table(phyXss))$Rank5
 tb_r5 &lt;- table(r5)
 results &lt;- data.frame()
@@ -521,7 +523,12 @@ for (j in names(tb_r5[tb_r5&gt;3])){
                               Pval = mdl$aov.tab$`Pr(&gt;F)`[1]))
 }
 print(results)</code></pre>
-<p>Eventually, this should return that Lactobacillaceae is not that important, while most of the other families are. Select one particular family and try to narrow down the particular differences. For instance, the family; Rikenellaceae with only 7 OTUs and a fair abundance coverage, are pretty good in discriminating the diets. Below is some code which takes you to some tiny details.</p>
+<p>Eventually, this should return that Lactobacillaceae is not that
+important, while most of the other families are. Select one particular
+family and try to narrow down the particular differences. For instance,
+the family; Rikenellaceae with only 7 OTUs and a fair abundance
+coverage, are pretty good in discriminating the diets. Below is some
+code which takes you to some tiny details.</p>
 <pre class="r"><code>ic &lt;- r5==&#39;f__Rikenellaceae&#39; &amp; !is.na(r5)
 phyXssj &lt;- subset_taxa(phyXss,ic)
 ord &lt;- ordinate(phyXssj,&#39;NMDS&#39;,&#39;bray&#39;)
@@ -536,26 +543,46 @@ ggplot(data = df, aes(OTU_76, OTU_352 + 0.001, color = Description)) +
   scale_y_log10() + 
   stat_ellipse()</code></pre>
 </div>
-<div id="metabolite-correlations" class="section level2">
-<h2><span class="header-section-number">1.7</span> Metabolite correlations</h2>
-<p>At the end of trial fecal water metabolomics is included. Investigate whether some of these can explain the beta diversity variation. Further, try to make a visualization where metabolite levels is included.</p>
+<div id="metabolite-correlations" class="section level2" number="1.7">
+<h2><span class="header-section-number">1.7</span> Metabolite
+correlations</h2>
+<p>At the end of trial fecal water metabolomics is included. Investigate
+whether some of these can explain the beta diversity variation. Further,
+try to make a visualization where metabolite levels is included.</p>
 </div>
-<div id="microbiome---diet---metabolome-interactions" class="section level2">
-<h2><span class="header-section-number">1.8</span> Microbiome - Diet - Metabolome interactions</h2>
-<p>Furhter, investigate if, for some metabolites, the association between metabolites and microbiome is only introduced by the design. I.e. when accounting for the effect of the design, the metabolite-microbiome associations becomes weaker.</p>
+<div id="microbiome---diet---metabolome-interactions"
+class="section level2" number="1.8">
+<h2><span class="header-section-number">1.8</span> Microbiome - Diet -
+Metabolome interactions</h2>
+<p>Furhter, investigate if, for some metabolites, the association
+between metabolites and microbiome is only introduced by the design.
+I.e. when accounting for the effect of the design, the
+metabolite-microbiome associations becomes weaker.</p>
 <pre class="r"><code>phyXsel &lt;- subset_samples(phyX, time == &#39;Slut&#39;)
 D_BC &lt;- phyloseq::distance(phyXsel, &quot;bray&quot;)
 
 adonis(D_BC ~ Fructose, data = data.frame(sample_data(phyXsel)))
 adonis(D_BC ~ Description + Fructose, data = data.frame(sample_data(phyXsel)))</code></pre>
 </div>
-<div id="wihtin-subject-memory" class="section level2">
-<h2><span class="header-section-number">1.9</span> Wihtin subject memory</h2>
-<p>Within each diet group, test if there is memory in microbiome over time. That is, how large degree of the variation is due to the individual mice? Is the degree of memory the same for the diffent diets?</p>
+<div id="wihtin-subject-memory" class="section level2" number="1.9">
+<h2><span class="header-section-number">1.9</span> Wihtin subject
+memory</h2>
+<p>Within each diet group, test if there is memory in microbiome over
+time. That is, how large degree of the variation is due to the
+individual mice? Is the degree of memory the same for the diffent
+diets?</p>
 </div>
-<div id="is-differential-abundance-results-depending-on-the-phylogenetic-tree" class="section level2">
-<h2><span class="header-section-number">1.10</span> Is differential Abundance results depending on the phylogenetic tree?</h2>
-<p>The effect size in from <em>differential abundance testing</em> is a vector of length <em>p</em> (the number of variables). In order to answer the question <em>“is the DA results depending on the phylogentic tree?”</em> we can use the adonis set, just flipping the problem to a <em>p</em> by <em>p</em> similarity matrix based on the the phylotree and then regress on to the DA information.</p>
+<div
+id="is-differential-abundance-results-depending-on-the-phylogenetic-tree"
+class="section level2" number="1.10">
+<h2><span class="header-section-number">1.10</span> Is differential
+Abundance results depending on the phylogenetic tree?</h2>
+<p>The effect size in from <em>differential abundance testing</em> is a
+vector of length <em>p</em> (the number of variables). In order to
+answer the question <em>“is the DA results depending on the phylogentic
+tree?”</em> we can use the adonis set, just flipping the problem to a
+<em>p</em> by <em>p</em> similarity matrix based on the the phylotree
+and then regress on to the DA information.</p>
 <pre class="r"><code>library(phyloseq)
 library(DESeq2)
 load(&#39;./data/Mice_csec.RData&#39;)
@@ -566,14 +593,20 @@ tb &lt;- results(res, cooksCutoff = FALSE)
 
 # run adonis versus tree
 tree &lt;- ape::cophenetic.phylo(phy_tree(phyX))
-tree[1:3,1:3]
-adonis(tree ~ tb$log2FoldChange&gt;0,permutations = 100)</code></pre>
+# look at the tree
+tree[1:3,1:3] 
+m &lt;- adonis2(tree ~ tb$log2FoldChange&gt;0,permutations = 100)
+ms</code></pre>
 </div>
 </div>
 <div id="references" class="section level1 unnumbered">
-<h1>References</h1>
-<p>McArdle, Brian H., and Marti J. Anderson. <strong>Fitting multivariate models to community data: a comment on distance‐based redundancy analysis</strong> Ecology 82, no. 1 (2001): 290-297.</p>
-<p>Xia, Yinglin, Jun Sun, and Ding-Geng Chen. <strong>Statistical analysis of microbiome data with R</strong>. Springer, 2018. Chapter 6.</p>
+<h1 class="unnumbered">References</h1>
+<p>McArdle, Brian H., and Marti J. Anderson. <strong>Fitting
+multivariate models to community data: a comment on distance‐based
+redundancy analysis</strong> Ecology 82, no. 1 (2001): 290-297.</p>
+<p>Xia, Yinglin, Jun Sun, and Ding-Geng Chen. <strong>Statistical
+analysis of microbiome data with R</strong>. Springer, 2018. Chapter
+6.</p>
 </div>
 
 
@@ -585,7 +618,7 @@ adonis(tree ~ tb$log2FoldChange&gt;0,permutations = 100)</code></pre>
 
 // add bootstrap table styles to pandoc tables
 function bootstrapStylePandocTables() {
-  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
 }
 $(document).ready(function () {
   bootstrapStylePandocTables();
@@ -593,6 +626,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

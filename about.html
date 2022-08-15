@@ -13,7 +13,8 @@
 
 <title>Microbiome analysis using 2nd and 3rd generation DNA sequencing + multivariate data analysis</title>
 
-<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
@@ -59,6 +60,7 @@ if (window.hljs) {
 
 
 
+
 <style type = "text/css">
 .main-container {
   max-width: 940px;
@@ -79,6 +81,9 @@ button.code-folding-btn:focus {
 }
 summary {
   display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
 }
 pre code {
   padding: 0;
@@ -231,7 +236,7 @@ $(document).ready(function () {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -247,7 +252,7 @@ $(document).ready(function () {
   <a href="pkgs.html">Installation</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Descriptives
      
     <span class="caret"></span>
@@ -265,7 +270,7 @@ $(document).ready(function () {
   </ul>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Statistical inference
      
     <span class="caret"></span>
@@ -280,7 +285,7 @@ $(document).ready(function () {
   </ul>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Supervised Multivariate models
      
     <span class="caret"></span>
@@ -309,27 +314,22 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Microbiome analysis using 2nd and 3rd generation DNA sequencing + multivariate data analysis</h1>
+<h1 class="title toc-ignore">Microbiome analysis using 2nd and 3rd
+generation DNA sequencing + multivariate data analysis</h1>
 
 </div>
 
 
-<p>This site serves as dry-lab material for the 2 week PhD course <em>Microbiome analysis using 2nd and 3rd generation DNA sequencing + multivariate data analysis</em>. Here you will find content on statistical data analysis of amplicon-seq microbiome data including preprocessing, descriptives, univariate- and multivariate statistical modelling ending with comparison additional layers of omics data.</p>
-<p>The course slides can be found <a href="https://github.com/mortenarendt/MicrobiomeDataAnalysis/blob/master/figs/MicrobiomeDatanalysis.pdf">here</a></p>
-<p>We heavily draw on the great work of the authors of phyloseq and metagenomeseq.</p>
-<div id="program" class="section level1 unnumbered">
-<h1>Program</h1>
-<div id="day-1" class="section level2 unnumbered">
-<h2>Day 1</h2>
-<p>9-12: Preprocessing, alpha- and beta diversity</p>
-<p>13-16: Differential abundance testing</p>
-</div>
-<div id="day-2" class="section level2 unnumbered">
-<h2>Day 2</h2>
-<p>9-12: Statistical testing of beta diversity metrics - <em>Permanova</em></p>
-<p>13-16: Multiomics with heatmaps and canonical correlation analysis</p>
-</div>
-</div>
+<p>This site serves as dry-lab material for the 2 week PhD course
+<em>Microbiome Analysis Course using 2nd and 3rd Generation DNA
+Sequencing</em>. Here you will find content on statistical data analysis
+of amplicon-seq microbiome data including preprocessing, descriptives,
+univariate- and multivariate statistical modelling ending with
+comparison of additional layers of omics data.</p>
+<p>The course slides can be found <a
+href="https://github.com/mortenarendt/MicrobiomeDataAnalysis/blob/master/figs/MicrobiomeDatanalysis.pdf">here</a></p>
+<p>We heavily draw on the great work of the authors of phyloseq and
+metagenomeseq.</p>
 
 
 

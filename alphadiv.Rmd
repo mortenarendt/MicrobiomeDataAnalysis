@@ -62,7 +62,7 @@ Rerun the above alpha diversity analysis with no preprocessing of the data
 
 ## Alpha vs library size
 
-Compare each measure of alpha diversity with the library size (number of reads per sample). What is problematic? (You can take inspiration in the code below on how to do this in R)
+Library size (number of reads per sample), is in amplicon sequencing considered to be nuisance with NO biological interpretation at all. Compare each measure of alpha diversity with the library size. What is problematic? (You can take inspiration in the code below on how to do this in R)
 
 ```{r, eval = F}
 libsize <- data.frame(libsize = sample_sums(phyX))

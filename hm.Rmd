@@ -1,0 +1,141 @@
+---
+title: "Heatmaps"
+output: 
+  html_document:
+    number_sections: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
+rm(list = ls())
+```
+
+In order to answer biological questions, often a combination of high-throughput data is generated. Especially in combination with microbiome types of data, the associated metabolome is naturally of interest, as these two sources together reflects _who are there_ and _what do they do_. 
+
+In the analysis of such data a natural starting point is to look for common structure. That is; which types of bacteria are correlated to a certain type of metabolites. 
+
+# Correlation Heat map {-}
+ 
+A natural starting point for such an analysis is to produce all pairwise correlations between the OTU table and the metabolite table, and visualize it in a heat map. The build in heatmap() function in R provides a quick initial overview of the data. 
+
+## Preprocess the data {-}
+
+```{r, cca_chunk1}
+library(phyloseq)
+library(tidyverse)
+load('./data/Rats_inulin.RData')
+
+phyXpp <- subset_samples(phyX, !is.na(Acetate))
+phyXpp <- filter_taxa(phyXpp, function(x) sum(x>0)>0, TRUE)
+phyXpp <- transform_sample_counts(phyXpp, function(x) x/sum(x))
+
+OTUtb <- data.frame(t(otu_table(phyXpp)))
+
+
+Mtb <- sample_data(phyXpp)[,c("Acetate","Butyrate","Fructose","Glucose","Lactate","Propionate","Xylose")]
+# preprocess the Mtb data
+Mtb$Xylose <- Mtb$Xylose + 0.141/2 # there is zeros for this one - so to fix log we need to add a bit. 
+Mtb <- log(Mtb)
+```
+
+## Pairwise correlations {-}
+
+Compute all pairwise correlations
+
+```{r}
+cr <- cor(OTUtb,Mtb)
+```
+
+## Visualize {-}
+
+```{r}
+heatmap(cr)
+```
+
+The ordering of the coloumns and rows for this heatmap is based on correlations structure of the _correlation matrix_. I.e. it is _NOT_ based on similarity of OTUs and metabolites respectively. This might lead to a wrong interpretation. So instead the dendrograms for the rows is based on the correlations of the OTUs and the dendrogram for the coloumns are based on the correlations of the metabolites. 
+
+```{r}
+rd<-dist(t(OTUtb))
+rc<-hclust(rd)
+
+cd<-dist(t(Mtb))
+cc<-hclust(cd)
+
+heatmap(cr, Rowv=as.dendrogram(rc), Colv=as.dendrogram(cc))
+```
+
+# Exercises
+
+## Heatmaps
+
+Import and run the codes above for generating heatmaps
+
+## Labels
+
+You might want to change the labels for the bacteria to something more intuitive, and furhter export the plot to pdf for zooming. Try to do this and answer whether you see structure in relation to taxonomic level. 
+
+```{r, eval = F}
+Txtb <- data.frame(tax_table(phyX))
+colnames(OTUtb) <- Txtb$Rank5 # use Rank5 as labels
+```
+
+## Effect of Preprocessing
+
+Try to change the preprocessing such as adding log tranform, and plot histograms of the two versions of the obtained correlations. What do you see? 
+
+## A zoom-in!
+
+Digg out OTU_154 and Acetate and plot those against each other. Add log-tranform with a pseudo-count and see what happends. try to add diet info... does that explain anything? 
+
+```{r,eval=FALSE, include=FALSE}
+phyXsel <- subset_samples(phyX, !is.na(Acetate))
+phyXsel <- filter_taxa(phyXsel, function(x) sum(x>0)>0, TRUE)
+phyXsel <- transform_sample_counts(phyXsel, function(x) (x/ sum(x)))
+OTUtb <- data.frame(t(otu_table(phyXsel)))
+cr_lg <- cor(OTUtb,Mtb)
+cr <- cor(OTUtb,Mtb)
+d <- abs(cr_lg - cr)
+which(d==max(d),arr.ind = T)
+
+cr[which(d==max(d),arr.ind = T)]
+cr_lg[which(d==max(d),arr.ind = T)]
+
+
+df <- cbind(OTUtblg,Mtb)
+ggplot(data = df, aes(OTU_154,Acetate)) + geom_point() + stat_smooth(method = lm)
+df <- cbind(OTUtb,Mtb)
+ggplot(data = df, aes(OTU_154,Acetate)) + geom_point() + stat_smooth(method = lm)
+```
+
+
+```{r, eval = T}
+phyXsel <- subset_samples(phyX, !is.na(Acetate))
+OTUsel <- data.frame(t(otu_table(phyXsel)))
+df <- cbind(sample_data(phyXsel),OTUsel)
+
+g1 <- ggplot(data = df, aes(OTU_154,Acetate)) + 
+  geom_point() + stat_smooth(method = lm) + ggtitle('raw')
+
+g2 <- ggplot(data = df, aes(log2(OTU_154 + 0.1),Acetate, color = Description)) + 
+  geom_point() + stat_smooth(method = lm) + ggtitle('log(count + pc)')
+
+gridExtra::grid.arrange(g1,g2, nrow = 1)
+```
+
+What do you learn from this? ... Should be a kinda scarry insight!  
+
+
+
+Try to color the samples according to intervention group, and see the difference: 
+
+```{r, eval=FALSE}
+g1 <- ggplot(data = df, aes(OTU_154,Acetate)) + 
+  geom_point(aes(color = Description)) + stat_smooth(method = lm) + ggtitle('raw')
+
+g2 <- ggplot(data = df, aes(log2(OTU_154 + 0.1),Acetate)) + 
+  geom_point(aes(color = Description)) + stat_smooth(method = lm) + ggtitle('log(count + pc)')
+
+gridExtra::grid.arrange(g1,g2, nrow = 1)
+
+```
+

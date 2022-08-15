@@ -1,0 +1,43 @@
+---
+title: "Packages"
+output: 
+  html_document:
+    number_sections: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# R {-}
+
+Install R, and Rstudio
+
+# Packages {-}
+
+__ggplot2__: For plotting data ggplot2 is very useful - can be installed from CRAN
+
+__tidyverse__: A collection of general data handling tools gaining much popularity within the R user community
+
+__phyloseq__: There are several packages for handling microbiome type data. For this course we use phyloseq see [tutorial](https://joey711.github.io/phyloseq/tutorials-index.html)
+
+__metagMisc__: A package with functionallity for cross-talk between different packages found on [github](https://rdrr.io/github/vmikk/metagMisc/)
+
+__vegan__: Vegan is a very useful package with a lot of functionality. However, here we use only the adonis() function. 
+
+__ape__: For handling phylogenetic trees this package is good. 
+
+__DAtest__: This a custome made _single purpose_ package to be found on [github](https://github.com/Russel88/DAtest)
+
+__DESeq2__: This package is developed for _Differential Expression_ statistics for RNA-seq data. However, it is widely used for microbiome data as well. 
+
+__metagenomeSeq__: Is a package for handling microbiome data. Here, especially the differential abundance testing procedure featureModel() is used. 
+
+__limma__: A general package for multiple _Differential Expression_ stats developed for RNA-seq. 
+
+__dream__: As limma, but focusing on mixed models, for instance from longitudinal / repeated measures experiments.
+
+__ggtree__: A nice vizualisation package for plotting tree, build on top of ggplot2 functionality.
+
+For details on installation and getting-started, please check vignettes, help-documentation, google, youtube,....  Most things are pretty easy to copy-paste and run from examples and then exchange with your own data. 
+

@@ -5,24 +5,26 @@ output:
     number_sections: TRUE
 ---
 
-This site serves as dry-lab material for the 2 week PhD course  _Microbiome analysis using 2nd and 3rd generation DNA sequencing + multivariate data analysis_. Here you will find content on statistical data analysis of amplicon-seq microbiome data including preprocessing, descriptives, univariate- and multivariate statistical modelling ending with comparison additional layers of omics data. 
+This site serves as dry-lab material for the 2 week PhD course  _Microbiome Analysis Course using 2nd and 3rd Generation DNA Sequencing_. Here you will find content on statistical data analysis of amplicon-seq microbiome data including preprocessing, descriptives, univariate- and multivariate statistical modelling ending with comparison of additional layers of omics data. 
 
 The course slides can be found [here](https://github.com/mortenarendt/MicrobiomeDataAnalysis/blob/master/figs/MicrobiomeDatanalysis.pdf)
 
 We heavily draw on the great work of the authors of phyloseq and metagenomeseq. 
 
+```{r, eval=FALSE, include=F}
+
 # Program {-}
 
 ## Day 1 {-}
 
-9-12: Preprocessing, alpha- and beta diversity
+#9-12: Preprocessing, alpha- and beta diversity
 
-13-16: Differential abundance testing
+#13-16: Differential abundance testing
 
 ## Day 2 {-}
 
-9-12: Statistical testing of beta diversity metrics - _Permanova_
+#9-12: Statistical testing of beta diversity metrics - _Permanova_
 
-13-16: Multiomics with heatmaps and canonical correlation analysis
-
-
+#13-16: Multiomics with heatmaps and canonical correlation analysis
+  
+```

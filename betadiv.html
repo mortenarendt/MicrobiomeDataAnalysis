@@ -13,7 +13,8 @@
 
 <title>Beta Diversity</title>
 
-<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
@@ -59,6 +60,7 @@ if (window.hljs) {
 
 
 
+
 <style type = "text/css">
 .main-container {
   max-width: 940px;
@@ -79,6 +81,9 @@ button.code-folding-btn:focus {
 }
 summary {
   display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
 }
 pre code {
   padding: 0;
@@ -231,7 +236,7 @@ $(document).ready(function () {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -247,7 +252,7 @@ $(document).ready(function () {
   <a href="pkgs.html">Installation</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Descriptives
      
     <span class="caret"></span>
@@ -265,7 +270,7 @@ $(document).ready(function () {
   </ul>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Statistical inference
      
     <span class="caret"></span>
@@ -280,7 +285,7 @@ $(document).ready(function () {
   </ul>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Supervised Multivariate models
      
     <span class="caret"></span>
@@ -314,50 +319,109 @@ $(document).ready(function () {
 </div>
 
 
-<p>Alpha diversity descripes the diversity <em>within</em> a sample. Beta diversity, on the other hand, descriptes the diversity <em>between</em> samples. This implies that beta diversity measures can <em>not</em> be calculated for a single sample, but is calculated for <em>all pairs</em> of samples in the dataset.</p>
-<p>So, if you have 10 samples, then there is <span class="math inline">\(9 + 8 + .... + 1 = 45\)</span> beta diversity measures!</p>
-<p>Each beta diversity measure measures the similarity between the corresponding two samples. That is a distance in <em>microbiome space</em>. I.e. is <span class="math inline">\(\beta diversity_{i,j} = 0\)</span> for sample <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> then the two samples are exactly similar. If <span class="math inline">\(\beta diversity_{i,j} &gt;&gt; 0\)</span> is large, then the two samples are very distinct.</p>
+<p>Alpha diversity descripes the diversity <em>within</em> a sample.
+Beta diversity, on the other hand, descriptes the diversity
+<em>between</em> samples. This implies that beta diversity measures can
+<em>not</em> be calculated for a single sample, but is calculated for
+<em>all pairs</em> of samples in the dataset.</p>
+<p>So, if you have 10 samples, then there is <span
+class="math inline">\(9 + 8 + .... + 1 = 45\)</span> beta diversity
+measures!</p>
+<p>Each beta diversity measure measures the similarity between the
+corresponding two samples. That is a distance in <em>microbiome
+space</em>. I.e. is <span class="math inline">\(\beta diversity_{i,j} =
+0\)</span> for sample <span class="math inline">\(i\)</span> and <span
+class="math inline">\(j\)</span> then the two samples are exactly
+similar. If <span class="math inline">\(\beta diversity_{i,j} &gt;&gt;
+0\)</span> is large, then the two samples are very distinct.</p>
 <p>Beta diversity measures are by definition non-negative numbers.</p>
-<p>While this can seem rather complex, combining beta diversity measures with dimentionallity reduction models such as Principal Component Analysis, comprise a very powerful tool for visualizing similarities and sisimilarities between samples.</p>
-<div id="from-otu-table-to-distance-table" class="section level1 unnumbered">
-<h1>From OTU table to Distance table</h1>
+<p>While this can seem rather complex, combining beta diversity measures
+with dimentionallity reduction models such as Principal Component
+Analysis, comprise a very powerful tool for visualizing similarities and
+sisimilarities between samples.</p>
+<div id="from-otu-table-to-distance-table"
+class="section level1 unnumbered">
+<h1 class="unnumbered">From OTU table to Distance table</h1>
 <p><img src="figs/OTU2bdiv.png" /></p>
-<p>Given an OTU table with <span class="math inline">\(n\)</span> samples and <span class="math inline">\(p\)</span> variables (OTUs): <span class="math inline">\(\mathbf{C}\)</span> the first task is to calculate all <span class="math inline">\(n(n-1)/2\)</span> pairwise distances and represent those in a symmetric <span class="math inline">\(n\)</span> by <span class="math inline">\(n\)</span> matrix <span class="math inline">\(\mathbf{D}\)</span>.</p>
-<p>There are several different ways to calculate the beta diversity. Check out the distanceMethodList to see those supported by phyloseq.</p>
+<p>Given an OTU table with <span class="math inline">\(n\)</span>
+samples and <span class="math inline">\(p\)</span> variables (OTUs):
+<span class="math inline">\(\mathbf{C}\)</span> the first task is to
+calculate all <span class="math inline">\(n(n-1)/2\)</span> pairwise
+distances and represent those in a symmetric <span
+class="math inline">\(n\)</span> by <span
+class="math inline">\(n\)</span> matrix <span
+class="math inline">\(\mathbf{D}\)</span>.</p>
+<p>There are several different ways to calculate the beta diversity.
+Check out the distanceMethodList to see those supported by phyloseq.</p>
 <p>These can in general be grouped according to two criterions:</p>
 <ul>
 <li><p>Sensitivity towards abundance or presence absense.</p></li>
 <li><p>Incorporation of phylogentic similarity.</p></li>
 </ul>
-<p>A thorough description can be found else where. Here we are going to focus on four common methods, namely <strong>Jaccard</strong>, <strong>Bray Curtis</strong>, <strong>weighted-</strong> and <strong>unweighted UNIFRAC</strong>, as these methods span the criterions mentioned above.</p>
-<p>Let <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> be count vectors for two samples with equally many features (OTUs)</p>
+<p>A thorough description can be found else where. Here we are going to
+focus on four common methods, namely <strong>Jaccard</strong>,
+<strong>Bray Curtis</strong>, <strong>weighted-</strong> and
+<strong>unweighted UNIFRAC</strong>, as these methods span the
+criterions mentioned above.</p>
+<p>Let <span class="math inline">\(a\)</span> and <span
+class="math inline">\(b\)</span> be count vectors for two samples with
+equally many features (OTUs)</p>
 <div id="bray-curtis-vs-jaccard" class="section level2 unnumbered">
-<h2>Bray Curtis vs Jaccard</h2>
-<p>The <strong>Jaccard’s index</strong> solely focus on presence/absence and hence do not distinguis a OTU on its abundance. On the other hand <strong>Bray Curtis</strong> focuses on abundance.</p>
+<h2 class="unnumbered">Bray Curtis vs Jaccard</h2>
+<p>The <strong>Jaccard’s index</strong> solely focus on presence/absence
+and hence do not distinguis a OTU on its abundance. On the other hand
+<strong>Bray Curtis</strong> focuses on abundance.</p>
 </div>
 <div id="jaccard" class="section level2 unnumbered">
-<h2>Jaccard</h2>
+<h2 class="unnumbered">Jaccard</h2>
 <p><strong>Jaccard’s index</strong> is defined as follows</p>
-<p><span class="math display">\[S_{a,b} = \frac{a&gt;0 \cap b&gt;0}{a&gt;0 \cup b&gt;0} = \frac{\#common OTUs}{\#total OTUs}\]</span></p>
+<p><span class="math display">\[S_{a,b} = \frac{a&gt;0 \cap
+b&gt;0}{a&gt;0 \cup b&gt;0} = \frac{\#common OTUs}{\#total
+OTUs}\]</span></p>
 </div>
 <div id="bray-curtis" class="section level2 unnumbered">
-<h2>Bray Curtis</h2>
-<p><strong>Bray Curtis</strong> dissimilarity index relates to the so-called Manhatten distance, and measures, for each OTU the descripancy in abundance. Normalized, and summed</p>
-<p><span class="math display">\[BC_{a,b} = \frac{\sum |a_i - b_i |}{\sum (a_i + b_i)} \]</span> for <span class="math inline">\(i = 1,...,p\)</span></p>
+<h2 class="unnumbered">Bray Curtis</h2>
+<p><strong>Bray Curtis</strong> dissimilarity index relates to the
+so-called Manhatten distance, and measures, for each OTU the descripancy
+in abundance. Normalized, and summed</p>
+<p><span class="math display">\[BC_{a,b} = \frac{\sum |a_i - b_i |}{\sum
+(a_i + b_i)} \]</span> for <span class="math inline">\(i =
+1,...,p\)</span></p>
 <p>Two observations:</p>
-<p>For OTU’s <em>absent</em> in both samples <span class="math inline">\(|a_i - b_i | = 0\)</span> which implies that BC only depends on observed OTUs. BC is insensitive towards total sum normalizion, as this is an inherent part of the denominator.</p>
+<p>For OTU’s <em>absent</em> in both samples <span
+class="math inline">\(|a_i - b_i | = 0\)</span> which implies that BC
+only depends on observed OTUs. BC is insensitive towards total sum
+normalizion, as this is an inherent part of the denominator.</p>
 </div>
 <div id="unifrac" class="section level2 unnumbered">
-<h2>UNIFRAC</h2>
-<p>Both, Jaccard and Bray Curtis makes a <em>flat</em> comparison of the samples, meaning, that any two different OTUs are alike. This, however we know is not the case, as OTUs belonging to the same taxonomic group (say Family) are <em>more</em> similar than two belonging to different groups. Utilizing this actively in the computation of similarities have some advances, as it removes uncertainty due to somewhat wrong annotation, reduces emphasis on differences between phylogenetic similar OTUs and enhances differences due to diffences on a diverse phylogenetic level.</p>
-<p>In line with Jaccard / Bray Curtis, Unifrac can be computed focusing on presence/absence as well as abundance. These are called unweigted and weighted unifrac respectively.</p>
+<h2 class="unnumbered">UNIFRAC</h2>
+<p>Both, Jaccard and Bray Curtis makes a <em>flat</em> comparison of the
+samples, meaning, that any two different OTUs are alike. This, however
+we know is not the case, as OTUs belonging to the same taxonomic group
+(say Family) are <em>more</em> similar than two belonging to different
+groups. Utilizing this actively in the computation of similarities have
+some advances, as it removes uncertainty due to somewhat wrong
+annotation, reduces emphasis on differences between phylogenetic similar
+OTUs and enhances differences due to diffences on a diverse phylogenetic
+level.</p>
+<p>In line with Jaccard / Bray Curtis, Unifrac can be computed focusing
+on presence/absence as well as abundance. These are called unweigted and
+weighted unifrac respectively.</p>
 </div>
 </div>
-<div id="from-distance-table-to-pcoa-plot" class="section level1 unnumbered">
-<h1>From Distance table to PCoA plot</h1>
+<div id="from-distance-table-to-pcoa-plot"
+class="section level1 unnumbered">
+<h1 class="unnumbered">From Distance table to PCoA plot</h1>
 <p><img src="figs/bdiv2PCoA.png" /></p>
-<p>Beta diversity measures has a similar structure as correlation / covariance matrices. Such matrices can be projected into a low dimensionality representation which can be visualized, showing the <em>largest common variation</em> from complex data in a simple plot. These plots are often refered to as ordination plots. For theory on such dimensionality reduction look up Principal Component Analysis (PCA), eigenvalue/eigenvector decomposition and multidimensional scaling.</p>
-<p>The function ordinate() and plot_ordination() from phyloseq are very useful for beta diversity plotting of microbiome data.</p>
+<p>Beta diversity measures has a similar structure as correlation /
+covariance matrices. Such matrices can be projected into a low
+dimensionality representation which can be visualized, showing the
+<em>largest common variation</em> from complex data in a simple plot.
+These plots are often refered to as ordination plots. For theory on such
+dimensionality reduction look up Principal Component Analysis (PCA),
+eigenvalue/eigenvector decomposition and multidimensional scaling.</p>
+<p>The function ordinate() and plot_ordination() from phyloseq are very
+useful for beta diversity plotting of microbiome data.</p>
 <pre class="r"><code>library(phyloseq)
 library(ggplot2)
 load(&#39;./data/Rats_inulin.RData&#39;)
@@ -367,14 +431,19 @@ plot_ordination(phyX,ordBC, color = &#39;Description&#39;) +
   facet_wrap(~time) + 
   theme(legend.position = &#39;bottom&#39;)</code></pre>
 <p><img src="betadiv_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
-<p>The plot_ordination() is in synch with ggplot2, why ggplot2 functionality adapts nicely.</p>
-<p>The interpretation of ordination plots are simple: Two points in close proximity are alike, while those distant are not alike.</p>
+<p>The plot_ordination() is in synch with ggplot2, why ggplot2
+functionality adapts nicely.</p>
+<p>The interpretation of ordination plots are simple: Two points in
+close proximity are alike, while those distant are not alike.</p>
 </div>
-<div id="exercise" class="section level1">
+<div id="exercise" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Exercise</h1>
-<div id="four-different-diversity-measures" class="section level2">
-<h2><span class="header-section-number">1.1</span> Four different diversity measures</h2>
-<p>Compute all four diversity measures directly on the <em>Rat</em> dataset. You might want to include some preprocessing.</p>
+<div id="four-different-diversity-measures" class="section level2"
+number="1.1">
+<h2><span class="header-section-number">1.1</span> Four different
+diversity measures</h2>
+<p>Compute all four diversity measures directly on the <em>Rat</em>
+dataset. You might want to include some preprocessing.</p>
 <pre class="r"><code>library(phyloseq)
 load(&#39;./data/Rats_inulin.RData&#39;); 
 
@@ -402,17 +471,22 @@ g1 &lt;- ggplot(data = df, aes(Axis.1,Axis.2,
   stat_ellipse() + 
   facet_wrap(~method,scales = &#39;free&#39;)
 
-pdf(&#39;./figs/PCoA.pdf&#39;, width = 8, height = 6)
-g1 +geom_hline(yintercept = 0) + geom_vline(xintercept = 0)  + theme_minimal()
-dev.off()</code></pre>
+g1 +geom_hline(yintercept = 0) + geom_vline(xintercept = 0)  + theme_minimal()</code></pre>
+<p><img src="betadiv_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>… If you want to save the (last produced) plot</p>
+<pre class="r"><code>ggsave(&#39;ThisIsFigure2formanus.pdf&#39;)</code></pre>
 </div>
-<div id="sensitive-towards-normalization" class="section level2">
-<h2><span class="header-section-number">1.2</span> Sensitive towards normalization</h2>
-<p>Based on the formulation, which of the methods are sensitive towards total sum normalization?</p>
+<div id="sensitive-towards-normalization" class="section level2"
+number="1.2">
+<h2><span class="header-section-number">1.2</span> Sensitive towards
+normalization</h2>
+<p>Based on the formulation, which of the methods are sensitive towards
+total sum normalization?</p>
 </div>
-<div id="compare-methods" class="section level2">
+<div id="compare-methods" class="section level2" number="1.3">
 <h2><span class="header-section-number">1.3</span> Compare methods</h2>
-<p>Compare the different similarity methods by vectorizing and correlating the distance objects.</p>
+<p>Compare the different similarity methods by vectorizing and
+correlating the distance objects.</p>
 <pre class="r"><code>D_BC &lt;- phyloseq::distance(phyX, &quot;bray&quot;)
 D_JC &lt;- phyloseq::distance(phyX, &quot;jaccard&quot;)
 D_UF &lt;- phyloseq::distance(phyX,  &quot;unifrac&quot;)
@@ -424,9 +498,11 @@ dist_df &lt;- data.frame(bray = as.vector(D_BC),
 
 cor(dist_df)</code></pre>
 </div>
-<div id="plot-it-with-design" class="section level2">
-<h2><span class="header-section-number">1.4</span> Plot it!! with design</h2>
-<p>The experiment is longitudinal with before and after diet (sausage) intervention. Try to infer this on the PCoA plot.</p>
+<div id="plot-it-with-design" class="section level2" number="1.4">
+<h2><span class="header-section-number">1.4</span> Plot it!! with
+design</h2>
+<p>The experiment is longitudinal with before and after diet (sausage)
+intervention. Try to infer this on the PCoA plot.</p>
 <pre class="r"><code>ggplot(data = df, aes(Axis.1,Axis.2, 
                       color = factor(Description),
                       shape = time, 
@@ -435,34 +511,85 @@ cor(dist_df)</code></pre>
   geom_line() + 
   stat_ellipse(aes(group = factor(Description):factor(time))) + 
   facet_wrap(~method,scales = &#39;free&#39;)</code></pre>
+<p><img src="betadiv_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 </div>
-<div id="within-subject-variation" class="section level2">
-<h2><span class="header-section-number">1.5</span> Within subject variation</h2>
-<p>Are there any tendencies towards each rat being more similar with it self over time?</p>
+<div id="within-subject-variation" class="section level2" number="1.5">
+<h2><span class="header-section-number">1.5</span> Within subject
+variation</h2>
+<p>Are there any tendencies towards each rat being more similar with it
+self over time?</p>
 </div>
-<div id="cowboy-linear-models" class="section level2">
-<h2><span class="header-section-number">1.6</span> Cowboy linear models</h2>
-<p>Try to compute a normal linear anova model with the component axis (1,2,..) as response dependent on time and rat ID.</p>
+<div id="cowboy-linear-models" class="section level2" number="1.6">
+<h2><span class="header-section-number">1.6</span> Cowboy linear
+models</h2>
+<p>Try to compute a normal linear anova model with the component axis
+(1,2,..) as response dependent on time and rat ID.</p>
 <pre class="r"><code>mdl &lt;- lm(data = df[df$method==&#39;Jaccard&#39;,],Axis.1~ID + time*Description)
 anova(mdl)</code></pre>
-<div id="the-tidyverse-way" class="section level3">
-<h3><span class="header-section-number">1.6.1</span> The tidyverse way</h3>
-<p>There is a new R-modelling paragdigme making it easy to do many things at once. If you find the coding trivial, it might be worth looking into, as it - after some headache - makes life easier. However, it is not a microbiome-thing, only R, and you can achieve the same with the more basic commands. Below is shown how the linear models from the chunk above is computed for all methods using the tidyverse and broom packages.</p>
+<div id="the-tidyverse-way" class="section level3" number="1.6.1">
+<h3><span class="header-section-number">1.6.1</span> The tidyverse
+way</h3>
+<p>There is a new R-modelling paragdigme making it easy to do many
+things at once. If you find the coding trivial, it might be worth
+looking into, as it - after some headache - makes life easier. However,
+it is not a microbiome-thing, only R, and you can achieve the same with
+the more basic commands. Below is shown how the linear models from the
+chunk above is computed for all methods using the tidyverse and broom
+packages.</p>
 <pre class="r"><code>library(tidyverse)
 library(broom)
 df %&gt;% 
   group_by(method) %&gt;% 
   do(lm(data = ., Axis.1~ID + time*Description) %&gt;% anova %&gt;% tidy)</code></pre>
-<p>This is kinda add hoc, as the composition is captured in not-only a single component. I.e. instead of using Axis.1 we would like to use all the Axes,… or the entire distance matrix. This is exactly the purpose of permanova. See more under <strong>Statistical inference</strong> -&gt; <strong>ANOVA on beta diversity</strong>.</p>
+<pre><code>## # A tibble: 16 × 7
+## # Groups:   method [4]
+##    method   term                df  sumsq   meansq statistic   p.value
+##    &lt;chr&gt;    &lt;chr&gt;            &lt;int&gt;  &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+##  1 BC       ID                  29 0.519  0.0179        3.52  8.74e- 4
+##  2 BC       time                 1 3.07   3.07        603.    1.61e-19
+##  3 BC       time:Description     2 0.578  0.289        56.8   3.22e-10
+##  4 BC       Residuals           26 0.132  0.00508      NA    NA       
+##  5 Jaccard  ID                  29 0.471  0.0162        2.65  7.06e- 3
+##  6 Jaccard  time                 1 3.01   3.01        492.    2.03e-18
+##  7 Jaccard  time:Description     2 0.538  0.269        43.9   4.59e- 9
+##  8 Jaccard  Residuals           26 0.159  0.00613      NA    NA       
+##  9 unifrac  ID                  29 0.191  0.00657       3.48  9.62e- 4
+## 10 unifrac  time                 1 1.13   1.13        597.    1.84e-19
+## 11 unifrac  time:Description     2 0.159  0.0794       42.0   7.13e- 9
+## 12 unifrac  Residuals           26 0.0491 0.00189      NA    NA       
+## 13 wunifrac ID                  29 0.0552 0.00190       2.75  5.46e- 3
+## 14 wunifrac time                 1 0.0976 0.0976      141.    5.29e-12
+## 15 wunifrac time:Description     2 0.0217 0.0109       15.7   3.40e- 5
+## 16 wunifrac Residuals           26 0.0180 0.000692     NA    NA</code></pre>
+<p>This is kinda add hoc, as the composition is captured in not-only a
+single component. I.e. instead of using Axis.1 we would like to use all
+the Axes,… or the entire distance matrix. This is exactly the purpose of
+permanova. See more under <strong>Statistical inference</strong> -&gt;
+<strong>ANOVA on beta diversity</strong>.</p>
 </div>
 </div>
 </div>
 <div id="references" class="section level1 unnumbered">
-<h1>References</h1>
-<p><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3413390/">Chen, Jun, Kyle Bittinger, Emily S. Charlson, Christian Hoffmann, James Lewis, Gary D. Wu, Ronald G. Collman, Frederic D. Bushman, and Hongzhe Li. <strong>Associating microbiome composition with environmental covariates using generalized UniFrac distances</strong>. Bioinformatics 28, no. 16 (2012): 2106-2113.</a></p>
-<p><a href="https://www.nature.com/articles/ismej2016139">Schmidt, Thomas Sebastian Benedikt, João Frederico Matias Rodrigues, and Christian Von Mering. <strong>A family of interaction-adjusted indices of community similarity</strong> The ISME journal 11, no. 3 (2017): 791.</a></p>
-<p><a href="https://aem.asm.org/content/aem/71/12/8228.full.pdf">Lozupone, Catherine, and Rob Knight. <strong>UniFrac: a new phylogenetic method for comparing microbial communities</strong>. Appl. Environ. Microbiol. 71, no. 12 (2005): 8228-8235.</a></p>
-<p>Xia, Yinglin, Jun Sun, and Ding-Geng Chen. <strong>Statistical analysis of microbiome data with R</strong>. Springer, 2018. Chapter 6.</p>
+<h1 class="unnumbered">References</h1>
+<p><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3413390/">Chen,
+Jun, Kyle Bittinger, Emily S. Charlson, Christian Hoffmann, James Lewis,
+Gary D. Wu, Ronald G. Collman, Frederic D. Bushman, and Hongzhe Li.
+<strong>Associating microbiome composition with environmental covariates
+using generalized UniFrac distances</strong>. Bioinformatics 28, no. 16
+(2012): 2106-2113.</a></p>
+<p><a href="https://www.nature.com/articles/ismej2016139">Schmidt,
+Thomas Sebastian Benedikt, João Frederico Matias Rodrigues, and
+Christian Von Mering. <strong>A family of interaction-adjusted indices
+of community similarity</strong> The ISME journal 11, no. 3 (2017):
+791.</a></p>
+<p><a
+href="https://aem.asm.org/content/aem/71/12/8228.full.pdf">Lozupone,
+Catherine, and Rob Knight. <strong>UniFrac: a new phylogenetic method
+for comparing microbial communities</strong>. Appl. Environ. Microbiol.
+71, no. 12 (2005): 8228-8235.</a></p>
+<p>Xia, Yinglin, Jun Sun, and Ding-Geng Chen. <strong>Statistical
+analysis of microbiome data with R</strong>. Springer, 2018. Chapter
+6.</p>
 </div>
 
 

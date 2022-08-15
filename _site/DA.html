@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Differential Abundance Testing</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Microbiome Data Analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="about.html">Home</a>
+</li>
+<li>
+  <a href="pkgs.html">Installation</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Descriptives
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="prepro.html">Preprocessing</a>
+    </li>
+    <li>
+      <a href="alphadiv.html">alpha diversity</a>
+    </li>
+    <li>
+      <a href="betadiv.html">beta diversity</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Statistical inference
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="DA.html">Differential Abundance</a>
+    </li>
+    <li>
+      <a href="adonistest.html">ANOVA on beta diversity</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Supervised Multivariate models
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="hm.html">Heatmaps</a>
+    </li>
+    <li>
+      <a href="cca.html">Canonical Correlation Analysis</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="https://github.com/mortenarendt/MicrobiomeDataAnalysis/tree/master/data">Data</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Differential Abundance Testing</h1>
+
+</div>
+
+
+<p>Having a study design in with there are two (or more) groups of samples, say male/female, diet1/diet2, etc. one is often interested in knowing:</p>
+<ul>
+<li>Is there a difference between the groups?</li>
+<li>Which bacteria / OTUs are most different between the groups?</li>
+</ul>
+<p>This concept is within microbiome statistics refered to as <strong>Differential Abundance Testing</strong>.</p>
+<p>The principal behind is very simple: Given an OTU matrix of <em>p</em> different OTUs;</p>
+<ol style="list-style-type: decimal">
+<li><p>Perform <em>p</em> univariate tests assigning an effect size and a p-value to each OTU on the question of differential abundance. That could for example be based on a simple t-test</p></li>
+<li><p>Arrange the <em>p</em> tests according to the p-value going from the smallest (most different OTU) to the largest (least different OTU)</p></li>
+<li><p>Deside a cut point for which OTUs to be assigned <em>discoveries</em>. I.e. OTUs with p-values below <span class="math inline">\(p_{cut}\)</span> to be discoveries. This task is known as multiple-testing-correction, and is a general statistical concept.</p></li>
+</ol>
+<p>Given that todays microbiome studies generates a large number of OTUs, <em>p</em> often higher than 1.000 there are two concerns:</p>
+<ul>
+<li>Choose a reliable and powerful univariate model</li>
+<li>Boost the discovery chance by filter and/or aglommeration</li>
+</ul>
+<p>The paper by Thorsen et al 2016 investigates a range of statistical strategies on both the ability to sort the OTUs from the most discriminatory to the least, as well as the false discovery rate control. Russel et al (2019) have streamlined this approach for selecting the relevant statistical engine, which nicely screens +20 methods in very few lines of code (see <a href="https://github.com/Russel88/DAtest">DAtest</a> for code)</p>
+<p>(see refs below)</p>
+<div id="exercise" class="section level1">
+<h1><span class="header-section-number">1</span> Exercise</h1>
+<div id="setting-up-data" class="section level2">
+<h2><span class="header-section-number">1.1</span> Setting up data</h2>
+<p>Rarefy the <em>mice birth mode</em> data to even depth, and use the phyloseq_to_deseq2() function to convert format including birht mode as class information.</p>
+</div>
+<div id="deseq" class="section level2">
+<h2><span class="header-section-number">1.2</span> DEseq</h2>
+<p>Perform DA test using DESeq() from the DESeq2 library. You might need to install this library in advance.</p>
+<pre class="r"><code>library(phyloseq)
+library(DESeq2)
+load(&#39;./data/Mice_csec.RData&#39;)
+
+birhtmode_ds &lt;- phyloseq_to_deseq2(phyX, ~ Birth_mode)
+
+res &lt;- DESeq(birhtmode_ds, test=&quot;Wald&quot;, fitType=&quot;parametric&quot;)</code></pre>
+</div>
+<div id="interpret-results" class="section level2">
+<h2><span class="header-section-number">1.3</span> Interpret results</h2>
+<p>Extract results and combine with tax information (from tax_table()) as well as read frequency per OTU as well as presence/absence percentage.</p>
+<pre class="r"><code>tb &lt;- results(res, cooksCutoff = FALSE)
+txtb &lt;- data.frame(tax_table(phyX))
+
+abu &lt;- taxa_sums(phyX)
+presence &lt;- apply(otu_table(phyX)&gt;0,1,sum)
+
+df_res &lt;- data.frame(est = tb$log2FoldChange, se = tb$lfcSE, pv = tb$pvalue, pvadj = tb$padj, abu, presence)
+df_res &lt;- cbind(df_res, txtb)
+df_res$name &lt;- rownames(df_res)</code></pre>
+</div>
+<div id="is-this-different-from-null" class="section level2">
+<h2><span class="header-section-number">1.4</span> Is this different from <em>null</em>?</h2>
+<p>Plot a histogram of the unadjusted p-values. How should this plot look like if there were <em>no</em> birth mode information in the data?</p>
+</div>
+<div id="vulcano-plot" class="section level2">
+<h2><span class="header-section-number">1.5</span> Vulcano plot</h2>
+<p>Plot a vulcano plot of the results. Try to facet out / or color according to a taxonomic level to get deeper insight on which bacteria that are affected the most.</p>
+<pre class="r"><code>ggplot(data = df_res, aes(est,-log10(pv), color = Rank4)) + 
+  geom_point() + 
+  geom_text(data = df_res[df_res$pv&lt;0.0001,], aes(label = name), color = &#39;black&#39;) + # put label on the top stuff
+  theme(legend.position = &#39;none&#39;) + 
+  facet_wrap(~Rank3)</code></pre>
+</div>
+<div id="rarecommon-vs-difference" class="section level2">
+<h2><span class="header-section-number">1.6</span> rare/common vs difference</h2>
+<p>Interpret the results as a function of read-frequency or presence/absence. Is it the dominating species that are most different?</p>
+</div>
+<div id="effect-of-agglomoration" class="section level2">
+<h2><span class="header-section-number">1.7</span> Effect of agglomoration</h2>
+<p>Perform tax glommeration (tax_glom()) at some taxonomic level, and re-run the analysis. Do you get the same results?</p>
+</div>
+<div id="metagenomeseq" class="section level2">
+<h2><span class="header-section-number">1.8</span> Metagenomeseq</h2>
+<p>Do exactly the same just using t-test, wilcox tests as well as metagenomeseq’s featureModel() and compare the results? Below are some code-inspiration.</p>
+<pre class="r"><code>library(metagenomeSeq)
+mgsdata &lt;- phyloseq_to_metagenomeSeq(phyX)
+mgsdata &lt;- cumNorm(mgsdata, p=.5)
+mod &lt;- model.matrix(~1+Birth_mode, data=pData(mgsdata))
+mgsfit &lt;- fitFeatureModel(obj = mgsdata,mod = mod)
+
+predictor &lt;- sample_data(phyX)$Birth_mode
+count_table &lt;- log(t(otu_table(phyX)) + 1)
+count_table &lt;- apply(count_table, 2, function(x) x/sum(x))
+pv_t &lt;- apply(count_table, 2,function(x) t.test(x ~ predictor)$p.value)</code></pre>
+</div>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
+<p><a href="https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-016-0208-8">Thorsen, Jonathan, Asker Brejnrod, Martin Mortensen, Morten A. Rasmussen, Jakob Stokholm, Waleed Abu Al-Soud, Søren Sørensen, Hans Bisgaard, and Johannes Waage. <strong>Large-scale benchmarking reveals false discoveries and count transformation sensitivity in 16S rRNA gene amplicon data analysis methods used in microbiome studies</strong>, <em>Microbiome</em> 4, no. 1 (2016): 62.</a></p>
+<p><a href="http://www.nature.com/nmeth/journal/v10/n12/full/nmeth.2658.html">Paulson, Joseph N., O. Colin Stine, Héctor Corrada Bravo, and Mihai Pop. <strong>Differential abundance analysis for microbial marker-gene surveys</strong>. Nature methods 10, no. 12 (2013): 1200.</a></p>
+<p><a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8">Love, Michael I., Wolfgang Huber, and Simon Anders. <strong>Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2</strong>. Genome biology 15.12 (2014): 550.</a></p>
+<p><a href="https://www.biorxiv.org/content/biorxiv/early/2018/01/02/241802.full.pdf">Russel, Jakob, Jonathan Thorsen, Asker D. Brejnrod, Hans Bisgaard, Soren J. Sorensen, and Mette Burmolle. <strong>DAtest: a framework for choosing differential abundance or expression method</strong>. bioRxiv (2018): 241802.</a></p>
+<p>Xia, Yinglin, Jun Sun, and Ding-Geng Chen. <strong>Statistical analysis of microbiome data with R</strong>. Springer, 2018.</p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

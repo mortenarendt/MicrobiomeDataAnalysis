@@ -1,0 +1,137 @@
+---
+title: "Preprocessing"
+output: 
+  html_document:
+    number_sections: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Why should the data be preprocessed? 
+
+For amplicon sequencing type of data, like 16S, there is in general three inherent characteristics of the count table: 
+
+* __Sparsity__ meaning that the vast majority of the numbers in the count table is zero.
+* __Compositionality__. Due to the protocol only a fraction of the total DNA content is amplified, however, this amplification is assumed to be stochastic between samples, and as the same amount of DNA is thrown at the sequencer, then all samples should end up with the same number of counts. This is not the exactly the case, but differences in the so called _library size_ is non informative, and the data is assumed compositional. 
+* __High number of variables__ (OTUs). Due to biology being complex and technology being sensitive, there is often a high number of different features (OTUs) from a study. These indeed refer to fine-grained information, but naturally carry statistical challenges. 
+
+# Filtering samples {-}
+
+Outlying samples or samples with low quality (few sequences) should be removed up-front. The function prune_samples() in phyloseq can be used for this.  
+
+# Filtering variables {-}
+
+Criterion for removing variables are usually the frequency of samples with non-zero counts. The function filter_taxa() in phyloseq can be used for this.  
+
+# Normalizing or rarefying {-}
+
+Due to inherent constitutionality within each samples, normalization or rarefaction is needed either as preprocessing or as a part of the statistical modeling. 
+
+## Total Sum Scaling (TSS) {-}
+
+TSS where each count within a sample is divided by the total number of counts within the sample, is the most intuitive and straight forward method for handling differences in library size. The function transform_sample_counts() in phyloseq can be used for this.  
+However, due to the library size being very much dependent on often very few OTUs carrying most of the reads within a sample, the uncertainty on these few OTUs consequently inflates the entire count table. One alternative is the _Cumulative Sum Scaling_ (CSS) which normalizes by the sum of the lowest _not so common_ OTUs within each sample. Statistically, this sum is less uncertain, and hence less inflation of uncertainty on the entire dataset. The function phyloseq_transform_css(), an add on to phyloseq from the [metagMisc package](https://rdrr.io/github/vmikk/metagMisc/)  can be used for this.  
+
+## Rarefaction {-}
+
+Rarefaction is a sub sampling technique where an equal amount of reads is stochastically drawn from the total amount of sequences for each sample. Consequently the data becomes _exact_ compositional, however, the sensitivity for discovery of rare / low count species is going down.
+The function rarefy_even_depth() in phyloseq can be used for this.  
+
+# Transformation {-}
+
+For some upstream statistical models the data might be better served by a monotone, but non-linear, transformation. 
+The inherent distribution, where a few OTUs carry most of the reads, means that e.g. some beta diversity metrics will naturally strongly depend on those OTUs, with the consequence that the not-so-common OTUs do not contributes to variation. One way to counteract this, is to make the larger smaller while making the smaller larger.... the sqrt() and log() transformation does exactly that. However, log(0) is -infinity and hence destroys everything. When using the log() transform a fix needs to be incorporated for instance log(x + pc) where pc is a _pseudo count_. The function transform_sample_counts() in phyloseq can be used for this.  
+
+# Agglomeration {-}
+
+OTU level resolution is sometimes not needed due to the biological questions manifesting at a higher taxonomic level. In such cases, all the counts within a taxonomic similar group of OTUs can be merged leading to fever features and less sparsity. The function tax_glom() in phyloseq can be used for this.  
+
+
+# References {-}
+
+[Thorsen, Jonathan, Asker Brejnrod, Martin Mortensen, Morten A. Rasmussen, Jakob Stokholm, Waleed Abu Al-Soud, Søren Sørensen, Hans Bisgaard, and Johannes Waage. __Large-scale benchmarking reveals false discoveries and count transformation sensitivity in 16S rRNA gene amplicon data analysis methods used in microbiome studies__,  _Microbiome_ 4, no. 1 (2016): 62.](https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-016-0208-8)
+
+[McMurdie, Paul J., and Susan Holmes. __Waste not, want not: why rarefying microbiome data is inadmissible__ _PLoS computational biology_ 10, no. 4 (2014): e1003531.](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1003531)
+
+[Paulson, Joseph N., O. Colin Stine, Héctor Corrada Bravo, and Mihai Pop. __Differential abundance analysis for microbial marker-gene surveys__. Nature methods 10, no. 12 (2013): 1200.](http://www.nature.com/nmeth/journal/v10/n12/full/nmeth.2658.html)
+
+Xia, Yinglin, Jun Sun, and Ding-Geng Chen. __Statistical analysis of microbiome data with R__. Springer, 2018.
+
+# Exercise 
+
+## Library size 
+
+Draw histogram of library size
+
+```{r}
+library(phyloseq)
+library(tidyverse)
+load('./data/Mice_csec.RData')
+
+libsize <- phyloseq::sample_sums(phyX)
+hist(libsize)
+
+# or the tidyverse way
+## phyX %>% sample_sums() %>% hist()
+```
+
+
+```{r,eval = F, include=F}
+# TSS normalize
+# filter of rare OTU's
+# calculate alpha diversity
+
+phyXr6 <- tax_glom(phyX, 'Rank6')
+
+plot_bar(phyXr6, fill = 'Rank5') + 
+  facet_wrap(~Birth_mode, scales = 'free') + 
+  theme(legend.position = 'none')
+
+```
+
+```{r,eval = F, include=F}
+library(phyloseq)
+load('./data/Mice_csec.RData')
+
+df <- data.frame(libsize = sample_sums(phyX))
+ggplot(data = df, aes(libsize)) + geom_histogram()
+metaD <- data.frame(sample_data(phyX))
+```
+
+## Preprocessing
+
+Play around with different preprocessing techniques and collect the beta-diversity measure of the different versions. Correlate those to see what happens. Inspiration for code below. Try to change the beta-diversity measure - for instance to (w)unifrac - and see what happens. 
+
+```{r,eval = F, include=T}
+library(phyloseq)
+load('./data/Mice_csec.RData')
+
+# TSS normalize
+phyXpp1 <- transform_sample_counts(phyX,function(x) x / sum(x))
+# CSS normalization
+phyXpp2 <- phyloseq_transform_css(phyX)  
+# rarefy
+phyXpp3 <- rarefy_even_depth(phyX)
+# filter of rare OTU's
+fr <- 0.5
+n <- 31 # number of samples
+phyXpp4 <- filter_taxa(phyX, function(x) sum(x > 0)>n*fr, TRUE)
+
+phyXpp5 <- tax_glom(phyX, 'Rank6')
+
+dd1 <- phyloseq::distance(phyXpp1,'bray')
+dd2 <- phyloseq::distance(phyXpp2,'bray')
+dd4 <- phyloseq::distance(phyXpp3,'bray')
+dd3 <- phyloseq::distance(phyXpp4,'bray')
+dd5 <- phyloseq::distance(phyXpp5,'bray')
+
+dist_df <- data.frame(TSS = as.vector(dd1), 
+                      CSS = as.vector(dd2),
+                      rare = as.vector(dd3),
+                      filt = as.vector(dd4), 
+                      rank5 = as.vector(dd5))
+cor(dist_df)
+```
+

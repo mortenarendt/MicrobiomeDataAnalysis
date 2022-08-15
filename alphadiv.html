@@ -13,7 +13,8 @@
 
 <title>Alpha Diversity</title>
 
-<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
@@ -59,6 +60,7 @@ if (window.hljs) {
 
 
 
+
 <style type = "text/css">
 .main-container {
   max-width: 940px;
@@ -79,6 +81,9 @@ button.code-folding-btn:focus {
 }
 summary {
   display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
 }
 pre code {
   padding: 0;
@@ -231,7 +236,7 @@ $(document).ready(function () {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -247,7 +252,7 @@ $(document).ready(function () {
   <a href="pkgs.html">Installation</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Descriptives
      
     <span class="caret"></span>
@@ -265,7 +270,7 @@ $(document).ready(function () {
   </ul>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Statistical inference
      
     <span class="caret"></span>
@@ -280,7 +285,7 @@ $(document).ready(function () {
   </ul>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Supervised Multivariate models
      
     <span class="caret"></span>
@@ -325,8 +330,13 @@ pre.redcars {
     background-color: #ffbbbb !important;
 }
 </style>
-<p>For each sample a single measure can be calculated describing the diversity within the sample. The most intuitive is <em>how many different bacteria (OTUs) is observed</em>. But there are others. The phyloseq package with the function plot_richness() supports seven different versions.</p>
-<p>These can easily be calculated and visualized according to a given design.</p>
+<p>For each sample a single measure can be calculated describing the
+diversity within the sample. The most intuitive is <em>how many
+different bacteria (OTUs) is observed</em>. But there are others. The
+phyloseq package with the function plot_richness() supports seven
+different versions.</p>
+<p>These can easily be calculated and visualized according to a given
+design.</p>
 <pre class="r"><code>library(ggplot2)
 library(phyloseq)
 load(&#39;./data/Mice_csec.RData&#39;)
@@ -340,18 +350,33 @@ ggplot(data = AlphaD, aes(Birth_mode, value, fill = Birth_mode)) +
   facet_wrap(~variable, scales = &#39;free&#39;) + 
   theme(legend.position = &#39;top&#39;)</code></pre>
 <p><img src="alphadiv_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
-<p>What you see here, is some indications of <em>vaginal delivery</em> results in lower diversity.</p>
-<p>Shannon diversity is a metric with relatively high dependency on rare OTUs. <em>Simpson</em> diversity (and <em>Inverse Simpson</em>) depends on the even-ness of the observed OTUs in the samples and is hence relatively independent on rare species, as is obvious from the mathematical formula. All three measures seems to be related to birth mode.</p>
-<p>In order to get more hands-on experience with alpha diversity and especially how different preprocessing techniques influences these metrics, the exercise below show case how inherient the stocastisity of the sequencing depth is in the data.</p>
-<div id="exercise" class="section level1">
+<p>What you see here, is some indications of <em>vaginal delivery</em>
+results in lower diversity.</p>
+<p>Shannon diversity is a metric with relatively high dependency on rare
+OTUs. <em>Simpson</em> diversity (and <em>Inverse Simpson</em>) depends
+on the even-ness of the observed OTUs in the samples and is hence
+relatively independent on rare species, as is obvious from the
+mathematical formula. All three measures seems to be related to birth
+mode.</p>
+<p>In order to get more hands-on experience with alpha diversity and
+especially how different preprocessing techniques influences these
+metrics, the exercise below show case how inherient the stocastisity of
+the sequencing depth is in the data.</p>
+<div id="exercise" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Exercise</h1>
-<div id="with-no-prepro" class="section level2">
+<div id="with-no-prepro" class="section level2" number="1.1">
 <h2><span class="header-section-number">1.1</span> With No prepro</h2>
-<p>Rerun the above alpha diversity analysis with no preprocessing of the data</p>
+<p>Rerun the above alpha diversity analysis with no preprocessing of the
+data</p>
 </div>
-<div id="alpha-vs-library-size" class="section level2">
-<h2><span class="header-section-number">1.2</span> Alpha vs library size</h2>
-<p>Compare each measure of alpha diversity with the library size (number of reads per sample). What is problematic? (You can take inspiration in the code below on how to do this in R)</p>
+<div id="alpha-vs-library-size" class="section level2" number="1.2">
+<h2><span class="header-section-number">1.2</span> Alpha vs library
+size</h2>
+<p>Library size (number of reads per sample), is in amplicon sequencing
+considered to be nuisance with NO biological interpretation at all.
+Compare each measure of alpha diversity with the library size. What is
+problematic? (You can take inspiration in the code below on how to do
+this in R)</p>
 <pre class="r"><code>libsize &lt;- data.frame(libsize = sample_sums(phyX))
 
 # merge
@@ -362,24 +387,29 @@ ggplot(data = AlphaD, aes(libsize,value)) +
   geom_point() + 
   stat_smooth(method = lm) + 
   facet_wrap(~variable, scales = &#39;free&#39;)</code></pre>
-<p>Two preprocessing techniques are investigated in terms their ability to remove the dependency on the library size. Namely rarefaction and OTU-filtering.</p>
+<p>Two preprocessing techniques are investigated in terms their ability
+to remove the dependency on the library size. Namely rarefaction and
+OTU-filtering.</p>
 </div>
-<div id="rarefy" class="section level2">
+<div id="rarefy" class="section level2" number="1.3">
 <h2><span class="header-section-number">1.3</span> Rarefy</h2>
-<p>Rarefy the sample to even depth, and calculate the corresponding alpha diversity measures</p>
+<p>Rarefy the sample to even depth, and calculate the corresponding
+alpha diversity measures</p>
 <pre class="r"><code>phyXrare &lt;- rarefy_even_depth(phyX)
 AlphaDrare &lt;- plot_richness(phyXrare)$data</code></pre>
 </div>
-<div id="does-it-work" class="section level2">
+<div id="does-it-work" class="section level2" number="1.4">
 <h2><span class="header-section-number">1.4</span> Does it work?</h2>
-<p>Merge with the <strong>original library size</strong> and check if you had succes.</p>
+<p>Merge with the <strong>original library size</strong> and check if
+you had succes.</p>
 <pre class="r"><code>AlphaDrare$X.SampleID &lt;- as.character(trimws(AlphaDrare$X.SampleID))
 AlphaDrare &lt;- merge(AlphaDrare, libsize, by.x = &#39;X.SampleID&#39;, by.y = &#39;row.names&#39;)
 
 ggplot(data = AlphaDrare, aes(....)) + </code></pre>
 </div>
-<div id="filter-of-rare-taxa" class="section level2">
-<h2><span class="header-section-number">1.5</span> Filter of rare taxa</h2>
+<div id="filter-of-rare-taxa" class="section level2" number="1.5">
+<h2><span class="header-section-number">1.5</span> Filter of rare
+taxa</h2>
 <p>Now try to use a filter that removes rare taxa</p>
 <pre class="r"><code>phyXfilt &lt;- filter_taxa(phyX,function(x) sum(x&gt;0) &gt; ??? , TRUE)
 
@@ -387,12 +417,17 @@ AlphaDfilt &lt;- plot_richness(phyXfilt)$data
 AlphaDfilt$X.SampleID &lt;- as.character(trimws(AlphaDfilt$X.SampleID))
 AlphaDfilt &lt;- merge(AlphaDfilt, libsize, by.x = &#39;X.SampleID&#39;, by.y = &#39;row.names&#39;)
 ggplot(data = AlphaDfilt, aes(...)) + </code></pre>
-<p>What you have learned here is that sequencing depth - and its variation between samples - inheriently affects data analysis. Preprocessing is capable of handling these issues, but <strong>only to some extend</strong>.</p>
+<p>What you have learned here is that sequencing depth - and its
+variation between samples - inheriently affects data analysis.
+Preprocessing is capable of handling these issues, but <strong>only to
+some extend</strong>.</p>
 </div>
 </div>
 <div id="references" class="section level1 unnumbered">
-<h1>References</h1>
-<p>Xia, Yinglin, Jun Sun, and Ding-Geng Chen. <strong>Statistical analysis of microbiome data with R</strong>. Springer, 2018. Chapter 6.</p>
+<h1 class="unnumbered">References</h1>
+<p>Xia, Yinglin, Jun Sun, and Ding-Geng Chen. <strong>Statistical
+analysis of microbiome data with R</strong>. Springer, 2018. Chapter
+6.</p>
 </div>
 
 

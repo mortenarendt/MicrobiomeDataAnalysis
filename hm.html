@@ -1,34 +1,48 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
 
 <title>Heatmaps</title>
 
-<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 
-<style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
-  pre:not([class]) {
-    background-color: white;
-  }
-</style>
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
 <script type="text/javascript">
 if (window.hljs) {
   hljs.configure({languages: []});
@@ -41,37 +55,11 @@ if (window.hljs) {
 
 
 
-<style type="text/css">
-h1 {
-  font-size: 34px;
-}
-h1.title {
-  font-size: 38px;
-}
-h2 {
-  font-size: 30px;
-}
-h3 {
-  font-size: 24px;
-}
-h4 {
-  font-size: 18px;
-}
-h5 {
-  font-size: 16px;
-}
-h6 {
-  font-size: 12px;
-}
-.table th:not([align]) {
-  text-align: left;
-}
-</style>
 
 
-</head>
 
-<body>
+
+
 
 <style type = "text/css">
 .main-container {
@@ -79,13 +67,8 @@ h6 {
   margin-left: auto;
   margin-right: auto;
 }
-code {
-  color: inherit;
-  background-color: rgba(0, 0, 0, 0.04);
-}
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -99,40 +82,16 @@ button.code-folding-btn:focus {
 summary {
   display: list-item;
 }
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
 </style>
 
 
 <style type="text/css">
-/* padding for bootstrap navbar */
-body {
-  padding-top: 51px;
-  padding-bottom: 40px;
-}
-/* offset scroll position for anchor links (for fixed navbar)  */
-.section h1 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h2 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h3 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h4 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h5 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
-.section h6 {
-  padding-top: 56px;
-  margin-top: -56px;
-}
 .dropdown-submenu {
   position: relative;
 }
@@ -160,7 +119,7 @@ body {
   margin-right: -10px;
 }
 .dropdown-submenu:hover>a:after {
-  border-left-color: #ffffff;
+  border-left-color: #adb5bd;
 }
 .dropdown-submenu.pull-left {
   float: none;
@@ -172,7 +131,7 @@ body {
 }
 </style>
 
-<script>
+<script type="text/javascript">
 // manage active state of menu based on current page
 $(document).ready(function () {
   // active menu anchor
@@ -183,14 +142,25 @@ $(document).ready(function () {
   var menuAnchor = $('a[href="' + href + '"]');
 
   // mark it active
-  menuAnchor.parent().addClass('active');
+  menuAnchor.tab('show');
 
   // if it's got a parent navbar menu mark it active as well
   menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
 });
 </script>
-
-<div class="container-fluid main-container">
 
 <!-- tabsets -->
 
@@ -200,7 +170,6 @@ $(document).ready(function () {
   max-height: 500px;
   min-height: 44px;
   overflow-y: auto;
-  background: white;
   border: 1px solid #ddd;
   border-radius: 4px;
 }
@@ -236,6 +205,7 @@ $(document).ready(function () {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -248,20 +218,17 @@ $(document).ready(function () {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
 
 
 
@@ -269,7 +236,7 @@ $(document).ready(function () {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -285,7 +252,7 @@ $(document).ready(function () {
   <a href="pkgs.html">Installation</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Descriptives
      
     <span class="caret"></span>
@@ -303,7 +270,7 @@ $(document).ready(function () {
   </ul>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Statistical inference
      
     <span class="caret"></span>
@@ -318,7 +285,7 @@ $(document).ready(function () {
   </ul>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Supervised Multivariate models
      
     <span class="caret"></span>
@@ -343,7 +310,7 @@ $(document).ready(function () {
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-<div class="fluid-row" id="header">
+<div id="header">
 
 
 
@@ -352,13 +319,22 @@ $(document).ready(function () {
 </div>
 
 
-<p>In order to answer biological questions, often a combination of high-throughput data is generated. Especially in combination with microbiome types of data, the associated metabolome is naturally of interest, as these two sources together reflects <em>who are there</em> and <em>what do they do</em>.</p>
-<p>In the analysis of such data a natural starting point is to look for common structure. That is; which types of bacteria are correlated to a certain type of metabolites.</p>
+<p>In order to answer biological questions, often a combination of
+high-throughput data is generated. Especially in combination with
+microbiome types of data, the associated metabolome is naturally of
+interest, as these two sources together reflects <em>who are there</em>
+and <em>what do they do</em>.</p>
+<p>In the analysis of such data a natural starting point is to look for
+common structure. That is; which types of bacteria are correlated to a
+certain type of metabolites.</p>
 <div id="correlation-heat-map" class="section level1 unnumbered">
-<h1>Correlation Heat map</h1>
-<p>A natural starting point for such an analysis is to produce all pairwise correlations between the OTU table and the metabolite table, and visualize it in a heat map. The build in heatmap() function in R provides a quick initial overview of the data.</p>
+<h1 class="unnumbered">Correlation Heat map</h1>
+<p>A natural starting point for such an analysis is to produce all
+pairwise correlations between the OTU table and the metabolite table,
+and visualize it in a heat map. The build in heatmap() function in R
+provides a quick initial overview of the data.</p>
 <div id="preprocess-the-data" class="section level2 unnumbered">
-<h2>Preprocess the data</h2>
+<h2 class="unnumbered">Preprocess the data</h2>
 <pre class="r"><code>library(phyloseq)
 library(tidyverse)
 load(&#39;./data/Rats_inulin.RData&#39;)
@@ -376,15 +352,20 @@ Mtb$Xylose &lt;- Mtb$Xylose + 0.141/2 # there is zeros for this one - so to fix 
 Mtb &lt;- log(Mtb)</code></pre>
 </div>
 <div id="pairwise-correlations" class="section level2 unnumbered">
-<h2>Pairwise correlations</h2>
+<h2 class="unnumbered">Pairwise correlations</h2>
 <p>Compute all pairwise correlations</p>
 <pre class="r"><code>cr &lt;- cor(OTUtb,Mtb)</code></pre>
 </div>
 <div id="visualize" class="section level2 unnumbered">
-<h2>Visualize</h2>
+<h2 class="unnumbered">Visualize</h2>
 <pre class="r"><code>heatmap(cr)</code></pre>
 <p><img src="hm_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
-<p>The ordering of the coloumns and rows for this heatmap is based on correlations structure of the <em>correlation matrix</em>. I.e. it is <em>NOT</em> based on similarity of OTUs and metabolites respectively. This might lead to a wrong interpretation. So instead the dendrograms for the rows is based on the correlations of the OTUs and the dendrogram for the coloumns are based on the correlations of the metabolites.</p>
+<p>The ordering of the coloumns and rows for this heatmap is based on
+correlations structure of the <em>correlation matrix</em>. I.e. it is
+<em>NOT</em> based on similarity of OTUs and metabolites respectively.
+This might lead to a wrong interpretation. So instead the dendrograms
+for the rows is based on the correlations of the OTUs and the dendrogram
+for the coloumns are based on the correlations of the metabolites.</p>
 <pre class="r"><code>rd&lt;-dist(t(OTUtb))
 rc&lt;-hclust(rd)
 
@@ -395,33 +376,55 @@ heatmap(cr, Rowv=as.dendrogram(rc), Colv=as.dendrogram(cc))</code></pre>
 <p><img src="hm_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
 </div>
 </div>
-<div id="exercises" class="section level1">
+<div id="exercises" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Exercises</h1>
-<div id="heatmaps" class="section level2">
+<div id="heatmaps" class="section level2" number="1.1">
 <h2><span class="header-section-number">1.1</span> Heatmaps</h2>
 <p>Import and run the codes above for generating heatmaps</p>
 </div>
-<div id="labels" class="section level2">
+<div id="labels" class="section level2" number="1.2">
 <h2><span class="header-section-number">1.2</span> Labels</h2>
-<p>You might want to change the labels for the bacteria to something more intuitive, and furhter export the plot to pdf for zooming. Try to do this and answer whether you see structure in relation to taxonomic level.</p>
+<p>You might want to change the labels for the bacteria to something
+more intuitive, and furhter export the plot to pdf for zooming. Try to
+do this and answer whether you see structure in relation to taxonomic
+level.</p>
 <pre class="r"><code>Txtb &lt;- data.frame(tax_table(phyX))
 colnames(OTUtb) &lt;- Txtb$Rank5 # use Rank5 as labels</code></pre>
 </div>
-<div id="effect-of-preprocessing" class="section level2">
-<h2><span class="header-section-number">1.3</span> Effect of Preprocessing</h2>
-<p>Try to change the preprocessing such as adding log tranform, and plot histograms of the two versions of the obtained correlations. What do you see?</p>
+<div id="effect-of-preprocessing" class="section level2" number="1.3">
+<h2><span class="header-section-number">1.3</span> Effect of
+Preprocessing</h2>
+<p>Try to change the preprocessing such as adding log tranform, and plot
+histograms of the two versions of the obtained correlations. What do you
+see?</p>
 </div>
-<div id="a-zoom-in" class="section level2">
+<div id="a-zoom-in" class="section level2" number="1.4">
 <h2><span class="header-section-number">1.4</span> A zoom-in!</h2>
-<p>Digg out OTU_154 and Acetate and plot those against each other. Add log-tranform with a pseudo-count and see what happends. try to add diet info… does that explain anything?</p>
+<p>Digg out OTU_154 and Acetate and plot those against each other. Add
+log-tranform with a pseudo-count and see what happends. try to add diet
+info… does that explain anything?</p>
 <pre class="r"><code>phyXsel &lt;- subset_samples(phyX, !is.na(Acetate))
 OTUsel &lt;- data.frame(t(otu_table(phyXsel)))
-df &lt;- cbind(OTUsel,Mtb)
+df &lt;- cbind(sample_data(phyXsel),OTUsel)
 
-g1 &lt;- ggplot(data = df, aes(OTU_154,Acetate)) + geom_point() + stat_smooth(method = lm) + ggtitle(&#39;raw&#39;)
-g2 &lt;- ggplot(data = df, aes(log2(OTU_154 + 0.1),Acetate)) + geom_point() + stat_smooth(method = lm) + ggtitle(&#39;log(count + pc)&#39;)
+g1 &lt;- ggplot(data = df, aes(OTU_154,Acetate)) + 
+  geom_point() + stat_smooth(method = lm) + ggtitle(&#39;raw&#39;)
+
+g2 &lt;- ggplot(data = df, aes(log2(OTU_154 + 0.1),Acetate, color = Description)) + 
+  geom_point() + stat_smooth(method = lm) + ggtitle(&#39;log(count + pc)&#39;)
+
 gridExtra::grid.arrange(g1,g2, nrow = 1)</code></pre>
+<p><img src="hm_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 <p>What do you learn from this? … Should be a kinda scarry insight!</p>
+<p>Try to color the samples according to intervention group, and see the
+difference:</p>
+<pre class="r"><code>g1 &lt;- ggplot(data = df, aes(OTU_154,Acetate)) + 
+  geom_point(aes(color = Description)) + stat_smooth(method = lm) + ggtitle(&#39;raw&#39;)
+
+g2 &lt;- ggplot(data = df, aes(log2(OTU_154 + 0.1),Acetate)) + 
+  geom_point(aes(color = Description)) + stat_smooth(method = lm) + ggtitle(&#39;log(count + pc)&#39;)
+
+gridExtra::grid.arrange(g1,g2, nrow = 1)</code></pre>
 </div>
 </div>
 
@@ -434,7 +437,7 @@ gridExtra::grid.arrange(g1,g2, nrow = 1)</code></pre>
 
 // add bootstrap table styles to pandoc tables
 function bootstrapStylePandocTables() {
-  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
 }
 $(document).ready(function () {
   bootstrapStylePandocTables();
@@ -442,6 +445,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

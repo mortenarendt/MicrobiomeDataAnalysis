@@ -1,0 +1,226 @@
+---
+title: "Canonical Correlation Analysis"
+output: 
+  html_document:
+    number_sections: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
+rm(list = ls())
+```
+
+In order to answer biological questions, often a combination of high-throughput data is generated. Especially in combination with microbiome types of data, the associated metabolome is naturally of interest, as these two sources together reflects _who are there_ and _what do they do_. 
+
+In the analysis of such data a natural starting point is to look for common structure. That is; which types of bacteria are correlated to a certain type of metabolites. 
+
+# Canonical Correlation Analysis {-}
+
+Canonical correlation analysis is a rather old statistical technique for finding common components between two sets of correlated variables such as microbiome and metabolomics data. 
+
+For an introduction and some _getting started_ code check out the [mixOmics package webpage](http://mixomics.org/methods/rcca/). 
+
+Indeed the vanilla CCA is limited due to dimentionallity issues from way to many variables compared to number of samples. Therefore several attemps has been made to circumvent this. Here we will exchange correlation by covariance to add a simple fix. 
+
+Below is a 2 component canonical covariance model. 
+
+But first you need to install a package. 
+```{r,eval = F}
+library(devtools)
+install_github('mortenarendt/StructuralKnowledgeModl')
+```
+
+
+
+```{r}
+library(structMultMdl)
+library(phyloseq)
+library(tidyverse)
+load('./data/Rats_inulin.RData')
+
+phyXpp <- subset_samples(phyX, !is.na(Acetate))
+phyXpp <- filter_taxa(phyXpp, function(x) sum(x>0)>0, TRUE)
+phyXpp <- transform_sample_counts(phyXpp, function(x) x/sum(x))
+
+OTUtb <- data.frame(t(otu_table(phyXpp)))
+
+Mtb <- sample_data(phyXpp)[,c("Acetate","Butyrate","Fructose","Glucose","Lactate","Propionate","Xylose")]
+# preprocess the Mtb data
+Mtb$Xylose <- Mtb$Xylose + 0.141/2 # there is zeros for this one - so to fix log we need to add a bit. 
+Mtb <- log(Mtb)
+
+# scale the variables
+GM <- as.matrix(scale(OTUtb, center = T))
+mtb <- as.matrix(scale(Mtb, center = T))
+
+results <- pCCA(mtb,GM,ncomp = 2, na = 0,nperm = 3)
+
+print(results$res_df)
+```
+
+Now, lets try to extract the model parameters and plot them
+
+```{r}
+# dig out scores and loadings and plotit. 
+scores <- data.frame(tx = results$a_results[[1]]$model$tx,
+                     ty = results$a_results[[1]]$model$ty)
+
+loadsY <- data.frame(wy = results$a_results[[1]]$model$Wy)
+loadsY <- cbind(loadsY, tax_table(phyXpp), by = 'row.names')
+
+loadsX <- data.frame(wx = results$a_results[[1]]$model$Wx) 
+loadsX$name <- rownames(loadsX)
+
+ggplot(data = scores, aes(tx.1,ty.1)) + 
+  geom_point() + 
+  xlab('Metabolomics Score') + ylab('Microbiome Score') + 
+  stat_smooth(method = lm, se= F)
+
+ggplot(data = loadsY[order(loadsY$Rank4),],aes(x = 1:476,wy.1,fill = Rank3)) + 
+  geom_bar(stat = 'identity') + 
+  ggtitle('Microbiome loadings') + 
+  theme(legend.position = 'bottom')
+
+ggplot(data = loadsX,aes(wx.1,wx.2,label = name)) + 
+  geom_point() + geom_label() + 
+  ggtitle('Metabolomics loadings') + 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)
+
+```
+
+
+This is a nice correlation, and this model is probably a good model, slightly overfitted though, but the main concern here is that it is hard to interpret, as _ALL_ the OTUs are active and further, tends to be pointing in different direction eventhough they are rather similar wrt taxonomy. 
+
+
+# Penalized Canonical Correlation Analysis {-}
+
+In order to circumvent this, a penalized model is produced. Two types of penalties are incorporated;
+
+* Sparsity - to set a fair part of the _not so informative_ loadings to zero. 
+* Loading similarity for phylogentic similarity. 
+
+The heuristics behind a phylogentic penalty is to make OTUs which are phylogentically close also to have similar model parameters.
+Here, a the phylogenetic tree is represented as a similarity matrix, which can be extracted by the cophenetic.phylo() function from the library ape, and translated from distance to similarity by either cor() or exp(-distance). 
+
+The sumabs argument is controling the level of sparsity for each loading vector on the input matrices respectively, such that a low value gives a more sparse model. the __na__ argument imposes a grid from 0 (no phylogentic penalty) to 1 (alot of phylogentic penalty), resulting in just as many models.
+
+```{r, include=T, eval=T}
+fixKernelMatrix <- function(P, thr = 1e-5,niter = 1000){
+  conv <- 1
+  n <- dim(P)[1]
+  cc <- 0
+  PP <- P
+  while (conv>thr & cc<niter){
+    cc <- cc+1
+    for (i in 1:n){
+      PP[i,] <- P[i,] / sum(P[i,])
+      PP[,i] <- P[,i] / sum(P[,i])
+    }
+    
+    conv <- norm(P - PP,'F')
+    P <- PP
+  }
+  print(paste('Kernel Smoother updated in',cc, 'iterations at thr =',thr))
+  return(PP)
+}
+
+
+D <- ape::cophenetic.phylo(phy_tree(phyXpp))
+#R <- cor(D)
+R <- fixKernelMatrix(exp(-D))
+
+res_pen <- pCCA(mtb,GM,R,ncomp = 2,sumabs = c(10,6), na = 10,nperm = 30)
+
+print(res_pen$res_df)
+```
+
+Now we take a descision on which model to use and extract it in a similar fashion as above. Resulting in the microbiome loadingplot below. 
+
+```{r,eval = T, include=FALSE}
+model_id <- 3
+# dig out scores and loadings and plotit. 
+scores <- data.frame(tx = res_pen$a_results[[model_id]]$model$tx,
+                     ty = res_pen$a_results[[model_id]]$model$ty)
+
+loadsY <- data.frame(wy = res_pen$a_results[[model_id]]$model$Wy)
+loadsY <- cbind(loadsY, tax_table(phyXpp))
+
+loadsX <- data.frame(wx = res_pen$a_results[[model_id]]$model$Wx) 
+loadsX$name <- rownames(loadsX)
+
+#ggplot(data = scores, aes(tx.1,ty.1)) + 
+ # geom_point() + 
+#  stat_smooth(method = lm, se= F)
+
+ggplot(data = loadsY[order(loadsY$Rank4),],aes(x = 1:476,wy.1,fill = Rank3)) + 
+  geom_bar(stat = 'identity') + 
+  ggtitle('Microbiome loadings') + 
+  theme(legend.position = 'bottom')
+
+#ggplot(data = loadsX,aes(wx.1,wx.2,label = name)) + 
+#  geom_point() + geom_label() + 
+#  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)
+```
+
+
+
+
+
+# Exercises
+
+## Vanilla CCA
+
+Perform the __uncontrained__ CCA as above and reconstruct the plots
+
+## Penalized CCA
+
+Try build a penalized version with two components, no sparsity for the metabolites but some sparsity for the microbiome. Screen a grid of phylo-penalities and decide which model to use, extract and plot it.
+
+```{r, eval=F, include=F}
+library(structMultMdl)
+
+load('./data/Rats_inulin.RData')
+phyXpp <- subset_samples(phyX, !is.na(Acetate))
+phyXpp <- transform_sample_counts(phyXpp, function(x) x/sum(x))
+phyXpp <- filter_taxa(phyXpp, function(x) sum(x>0)>0, TRUE)
+
+OTUtb <- data.frame(t(otu_table(phyXpp)))
+
+D <- ape::cophenetic.phylo(phy_tree(phyXpp))
+
+xx <- as.matrix(scale(OTUtb,center = T))
+XX <- as.matrix(scale(Mtb, center = T))
+dim(XX)
+dim(xx)
+
+R <- cor(D)
+R <- exp(-D)
+dim(R)
+
+results <- pCCA(XX,xx,R,ncomp = 2, na = 0,nperm = 100)
+
+# dig out loadings and plotit. 
+
+# do constrained model and look at it. 
+results_l1_2 <- pCCA(XX,xx,R,ncomp = 2,sumabs = c(10,-1), na = 10,nperm = 100)
+
+loads <- data.frame(results_l1_2$a_results[[4]]$model$Wy)
+loads <- merge(loads, tax_table(phyXpp), by = 'row.names')
+
+ic <- loads$X1!=0
+ggplot(data = loads[ic,],aes(x = 1:sum(ic),X1,fill = Rank4)) + geom_bar(stat = 'identity')
+
+
+results$res_df %>% gather(component,pvalue,-A) %>% 
+  qplot(data = .,A,pvalue) + 
+  stat_smooth(se = F) + 
+  xlab('degree of penalty') + 
+  facet_wrap(~component, scales = 'free') + 
+  theme_classic()
+
+```
+
+# References
+
+
+
