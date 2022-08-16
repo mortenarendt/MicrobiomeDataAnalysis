@@ -34,6 +34,8 @@ navbar:
       menu: 
         - text: "Differential Abundance"
           href: DA.html
+        - text: "Differential Abundance - Repeated measures"
+          href: DAmixed.html
         - text: "ANOVA on beta diversity"
           href: adonistest.html
     - text: "Supervised Multivariate models"

@@ -1,0 +1,144 @@
+---
+title: "Differential Abundance for Repeated measures"
+output: 
+  html_document:
+    number_sections: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F, eval = T)
+```
+
+In a fair part of practical research designs including repeated sampling of the same individual occur. 
+This is statistically a powerfull way to do research, as the effect of some pertubation (diet, medication, etc) is contrasted in the same individual. Usually, a measure at baseline is available, and then one or several after an intervention. Sometimes cross over designs is used, such that each individual is undergoing all treatments in the experiment. 
+
+Modelling these data is in statistics refered to as mixed models. Mixed, due to the model having several terms modelling the random variation. For single univariate models, the _nlme_ or _lme4_ package has the functionallity. For multivariate analysis such as for the microbiome, there are dedicated methods which, as for the metagenomeSeq and DESeq2 methods, has parameter shrinkage to robustify the results. Here we use the [dream framework](https://www.bioconductor.org/packages/devel/bioc/vignettes/variancePartition/inst/doc/dream.html) (from Bioconductor). 
+
+# Example data  {-}
+
+The sausage intervention data is an example of repeated measures with baseline and after intervention data. 
+
+```{r}
+library(tidyverse)
+library(phyloseq) 
+library(variancePartition)
+library(edgeR)
+library(BiocParallel)
+
+load('./data/Rats_inulin.RData')
+phyX
+metadata <- phyX %>% sample_data()
+table(metadata$time,metadata$ID)
+table(paste(metadata$Description,metadata$ID),metadata$time)
+```
+Here, the time==Start indicates pre-diet intervention, and hence here the rats should be similar regardless of diet. 
+
+The model for the responses (the abundance of the microbiome) is:
+
+$$ y_i = a(time_i) + b(time_i,diet_i) +\kappa(ID_i) + e_i$$
+Here $a$ and $b$ describes the effect of time and time and diet in combination, while $\kappa$ reflects the difference between individual Rats, and $e$ reflects the residual uncertainty. 
+
+## Setup the data  {-}
+
+```{r}
+phyX <- phyX %>% subset_samples(ID!='F1') # remove the F1 rat with no slut data. 
+
+otutb <- as.data.frame(phyX@otu_table )
+metadata <- phyX %>% sample_data() %>% data.frame() %>% 
+  mutate(Diet = gsub('[[:punct:]]','',Description)) # we need to remove the + from the Description coloumn. 
+
+GM = DGEList(otutb)
+GM = calcNormFactors( GM)
+
+# Specify parallel processing parameters
+# this is used implicitly by dream() to run in parallel
+param = SnowParam(4, "SOCK", progressbar=TRUE)
+```
+
+## Specify the model {-}
+
+```{r}
+# The variable to be tested must be a fixed effect
+form <- ~ time + time:Diet  + (1|ID)
+```
+
+## Run the model {-}
+
+
+```{r}
+# estimate weights using linear mixed model of dream
+vobjDream = voomWithDreamWeights( GM, form, metadata, BPPARAM=param )
+
+# Fit the dream model on each gene
+# By default, uses the Satterthwaite approximation for the hypothesis test
+fitmm = dream( vobjDream, form, metadata )
+fitmm = eBayes(fitmm)
+```
+
+## Look at the results {-}
+
+```{r}
+topTable( fitmm) %>% data.frame() %>% rownames_to_column('asv')
+```
+
+
+This is overall effects. Obviously, diet changes the microbiome. 
+However, what we are interested in is the contrasts. 
+
+## Contrasts  {-}
+
+This is refered to as contrasts. I.e. compare the effect from _Start_ to _Slut_ for Frankfurter with the same for chow; A change versus a change. 
+
+This is specified using the coloumn names from the output above.
+Here the effect of Frankfurter is compare to the control diet (Chow). 
+Note that Chow is not mentioned in the effects, as this is by the model set to the reference level. 
+Likewise the effect of Inulin is included as a contrast towards Frankfurter alone. 
+
+```{r, fig.width=7}
+L = makeContrastsDream( form, metadata, 
+                        contrasts = c("timeSlut.DietFrankfurter - timeStart.DietFrankfurter + timeStart",
+                                      "timeSlut.DietFrankfurterinulin - timeStart.DietFrankfurterinulin - timeSlut.DietFrankfurter + timeStart.DietFrankfurter"))
+
+dimnames(L)[2]$Contrasts <-  c('C_FF','C_Inulin') # the labels are tooo long, so here shorter versions
+plotContrasts(L)
+```
+
+## Fit the model
+
+```{r}
+fit = dream( vobjDream, form, metadata, L)
+fit = eBayes(fit)
+```
+
+## Extract results and plot it
+
+```{r}
+res_Frankfurter <- topTable( fit, coef="C_FF", number=1000) # we just export all
+res_Inulin <- topTable( fit, coef="C_Inulin", number=1000) # we just export all
+
+TXtab <- phyX %>% tax_table() %>% data.frame() %>% # export TAxtable to glue onto results
+  rownames_to_column('otu') 
+
+res <- bind_rows(res_Frankfurter %>% mutate(contrast = 'Frankfurter vs Chow') %>% rownames_to_column('otu'), 
+                 res_Inulin %>% mutate(contrast = 'FFinulin vs FF') %>% rownames_to_column('otu')) %>%
+  left_join(TXtab, by = 'otu') # add Taxinfo
+
+
+ggplot(data = res, aes(logFC, -log10(P.Value), label = otu, color = Rank2)) + 
+  geom_point() + 
+  geom_text(data = res[res$P.Value<0.000001,]) + 
+  facet_wrap(~contrast)
+```
+
+... Lets plot one example OTU_6
+
+```{r}
+
+data.frame(metadata,otusel = as.numeric(otutb['OTU_6',])) %>% 
+  ggplot(data =., aes(time,otusel + 1)) + geom_boxplot() + 
+  geom_line(aes(group = ID)) + 
+  scale_y_log10() + 
+  facet_wrap(~Diet)
+
+```
+

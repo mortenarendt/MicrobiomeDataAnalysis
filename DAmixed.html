@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Differential Abundance for Repeated measures</title>
+
+<script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Microbiome Data Analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="about.html">Home</a>
+</li>
+<li>
+  <a href="pkgs.html">Installation</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Descriptives
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="prepro.html">Preprocessing</a>
+    </li>
+    <li>
+      <a href="alphadiv.html">alpha diversity</a>
+    </li>
+    <li>
+      <a href="betadiv.html">beta diversity</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Statistical inference
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="DA.html">Differential Abundance</a>
+    </li>
+    <li>
+      <a href="DAmixed.html">Differential Abundance - Repeated measures</a>
+    </li>
+    <li>
+      <a href="adonistest.html">ANOVA on beta diversity</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Supervised Multivariate models
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="hm.html">Heatmaps</a>
+    </li>
+    <li>
+      <a href="cca.html">Canonical Correlation Analysis</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="https://github.com/mortenarendt/MicrobiomeDataAnalysis/tree/master/data">Data</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Differential Abundance for Repeated
+measures</h1>
+
+</div>
+
+
+<p>In a fair part of practical research designs including repeated
+sampling of the same individual occur. This is statistically a powerfull
+way to do research, as the effect of some pertubation (diet, medication,
+etc) is contrasted in the same individual. Usually, a measure at
+baseline is available, and then one or several after an intervention.
+Sometimes cross over designs is used, such that each individual is
+undergoing all treatments in the experiment.</p>
+<p>Modelling these data is in statistics refered to as mixed models.
+Mixed, due to the model having several terms modelling the random
+variation. For single univariate models, the <em>nlme</em> or
+<em>lme4</em> package has the functionallity. For multivariate analysis
+such as for the microbiome, there are dedicated methods which, as for
+the metagenomeSeq and DESeq2 methods, has parameter shrinkage to
+robustify the results. Here we use the <a
+href="https://www.bioconductor.org/packages/devel/bioc/vignettes/variancePartition/inst/doc/dream.html">dream
+framework</a> (from Bioconductor).</p>
+<div id="example-data" class="section level1 unnumbered">
+<h1 class="unnumbered">Example data</h1>
+<p>The sausage intervention data is an example of repeated measures with
+baseline and after intervention data.</p>
+<pre class="r"><code>library(tidyverse)
+library(phyloseq) 
+library(variancePartition)
+library(edgeR)
+library(BiocParallel)
+
+load(&#39;./data/Rats_inulin.RData&#39;)
+phyX</code></pre>
+<pre><code>## phyloseq-class experiment-level object
+## otu_table()   OTU Table:         [ 480 taxa and 59 samples ]
+## sample_data() Sample Data:       [ 59 samples by 15 sample variables ]
+## tax_table()   Taxonomy Table:    [ 480 taxa by 7 taxonomic ranks ]
+## phy_tree()    Phylogenetic Tree: [ 480 tips and 477 internal nodes ]</code></pre>
+<pre class="r"><code>metadata &lt;- phyX %&gt;% sample_data()
+table(metadata$time,metadata$ID)</code></pre>
+<pre><code>##        
+##         F1 F10 F11 F12 F13 F14 F15 F16 F17 F18 F19 F2 F20 F21 F22 F23 F24 F25
+##   Slut   0   1   1   1   1   1   1   1   1   1   1  1   1   1   1   1   1   1
+##   Start  1   1   1   1   1   1   1   1   1   1   1  1   1   1   1   1   1   1
+##        
+##         F26 F27 F28 F29 F3 F30 F4 F5 F6 F7 F8 F9
+##   Slut    1   1   1   1  1   1  1  1  1  1  1  1
+##   Start   1   1   1   1  1   1  1  1  1  1  1  1</code></pre>
+<pre class="r"><code>table(paste(metadata$Description,metadata$ID),metadata$time)</code></pre>
+<pre><code>##                         
+##                          Slut Start
+##   Chow F1                   0     1
+##   Chow F13                  1     1
+##   Chow F15                  1     1
+##   Chow F20                  1     1
+##   Chow F21                  1     1
+##   Chow F22                  1     1
+##   Frankfurter F10           1     1
+##   Frankfurter F11           1     1
+##   Frankfurter F12           1     1
+##   Frankfurter F17           1     1
+##   Frankfurter F2            1     1
+##   Frankfurter F24           1     1
+##   Frankfurter F25           1     1
+##   Frankfurter F29           1     1
+##   Frankfurter F3            1     1
+##   Frankfurter F4            1     1
+##   Frankfurter F6            1     1
+##   Frankfurter F8            1     1
+##   Frankfurter+inulin F14    1     1
+##   Frankfurter+inulin F16    1     1
+##   Frankfurter+inulin F18    1     1
+##   Frankfurter+inulin F19    1     1
+##   Frankfurter+inulin F23    1     1
+##   Frankfurter+inulin F26    1     1
+##   Frankfurter+inulin F27    1     1
+##   Frankfurter+inulin F28    1     1
+##   Frankfurter+inulin F30    1     1
+##   Frankfurter+inulin F5     1     1
+##   Frankfurter+inulin F7     1     1
+##   Frankfurter+inulin F9     1     1</code></pre>
+<p>Here, the time==Start indicates pre-diet intervention, and hence here
+the rats should be similar regardless of diet.</p>
+<p>The model for the responses (the abundance of the microbiome) is:</p>
+<p><span class="math display">\[ y_i = a(time_i) + b(time_i,diet_i)
++\kappa(ID_i) + e_i\]</span> Here <span class="math inline">\(a\)</span>
+and <span class="math inline">\(b\)</span> describes the effect of time
+and time and diet in combination, while <span
+class="math inline">\(\kappa\)</span> reflects the difference between
+individual Rats, and <span class="math inline">\(e\)</span> reflects the
+residual uncertainty.</p>
+<div id="setup-the-data" class="section level2 unnumbered">
+<h2 class="unnumbered">Setup the data</h2>
+<pre class="r"><code>phyX &lt;- phyX %&gt;% subset_samples(ID!=&#39;F1&#39;) # remove the F1 rat with no slut data. 
+
+otutb &lt;- as.data.frame(phyX@otu_table )
+metadata &lt;- phyX %&gt;% sample_data() %&gt;% data.frame() %&gt;% 
+  mutate(Diet = gsub(&#39;[[:punct:]]&#39;,&#39;&#39;,Description)) # we need to remove the + from the Description coloumn. 
+
+GM = DGEList(otutb)
+GM = calcNormFactors( GM)
+
+# Specify parallel processing parameters
+# this is used implicitly by dream() to run in parallel
+param = SnowParam(4, &quot;SOCK&quot;, progressbar=TRUE)</code></pre>
+</div>
+<div id="specify-the-model" class="section level2 unnumbered">
+<h2 class="unnumbered">Specify the model</h2>
+<pre class="r"><code># The variable to be tested must be a fixed effect
+form &lt;- ~ time + time:Diet  + (1|ID)</code></pre>
+</div>
+<div id="run-the-model" class="section level2 unnumbered">
+<h2 class="unnumbered">Run the model</h2>
+<pre class="r"><code># estimate weights using linear mixed model of dream
+vobjDream = voomWithDreamWeights( GM, form, metadata, BPPARAM=param )
+
+# Fit the dream model on each gene
+# By default, uses the Satterthwaite approximation for the hypothesis test
+fitmm = dream( vobjDream, form, metadata )
+fitmm = eBayes(fitmm)</code></pre>
+</div>
+<div id="look-at-the-results" class="section level2 unnumbered">
+<h2 class="unnumbered">Look at the results</h2>
+<pre class="r"><code>topTable( fitmm) %&gt;% data.frame() %&gt;% rownames_to_column(&#39;asv&#39;)</code></pre>
+<pre><code>##        asv  timeStart timeSlut.DietFrankfurter timeStart.DietFrankfurter
+## 1  OTU_335  0.1297187                -9.220387                0.24551572
+## 2  OTU_104 -0.1473365                -7.785734                0.58570096
+## 3  OTU_158 -0.3457801                -5.989588               -0.05934233
+## 4   OTU_61  0.6254242                -7.621000               -0.18189159
+## 5   OTU_11 -0.2638319                -7.247096               -0.27248001
+## 6  OTU_322  0.3836453               -10.963428                0.29960589
+## 7  OTU_184 -0.2080900                -8.307366                0.54575177
+## 8    OTU_1  0.3860534               -11.383298                0.31251595
+## 9  OTU_392  0.5387490                -8.156050                0.16968601
+## 10 OTU_316 -0.2278700                -7.261509               -0.21363817
+##    timeSlut.DietFrankfurterinulin timeStart.DietFrankfurterinulin   AveExpr
+## 1                       -7.203989                       0.6436130  9.572451
+## 2                       -5.945298                       0.8010878  8.263286
+## 3                       -8.931951                       0.4146616  9.287396
+## 4                       -7.146310                       0.7132015  8.075186
+## 5                      -10.635354                       0.2701809 11.094185
+## 6                       -7.459150                       0.3698238 11.116804
+## 7                       -6.711202                       0.4552153  8.914544
+## 8                       -7.479613                       0.4195833 11.902923
+## 9                       -6.207145                       0.5919376  8.836984
+## 10                      -8.540557                       0.3240162 10.071743
+##           F      P.Value    adj.P.Val    F.std
+## 1  132.6506 1.420810e-31 2.737620e-29 30.91393
+## 2  132.6494 1.421192e-31 2.737620e-29 30.91382
+## 3  131.7727 1.711013e-31 2.737620e-29 30.83813
+## 4  130.1487 2.420170e-31 2.904204e-29 30.69671
+## 5  127.1521 4.637458e-31 4.451960e-29 30.43144
+## 6  118.1693 3.552799e-30 2.842239e-28 29.60058
+## 7  113.8911 9.845909e-30 6.577047e-28 29.18448
+## 8  113.4487 1.096174e-29 6.577047e-28 29.14065
+## 9  106.2699 6.609330e-29 3.524976e-27 28.40689
+## 10 105.8610 7.345179e-29 3.525686e-27 28.36377</code></pre>
+<p>This is overall effects. Obviously, diet changes the microbiome.
+However, what we are interested in is the contrasts.</p>
+</div>
+<div id="contrasts" class="section level2 unnumbered">
+<h2 class="unnumbered">Contrasts</h2>
+<p>This is refered to as contrasts. I.e. compare the effect from
+<em>Start</em> to <em>Slut</em> for Frankfurter with the same for chow;
+A change versus a change.</p>
+<p>This is specified using the coloumn names from the output above. Here
+the effect of Frankfurter is compare to the control diet (Chow). Note
+that Chow is not mentioned in the effects, as this is by the model set
+to the reference level. Likewise the effect of Inulin is included as a
+contrast towards Frankfurter alone.</p>
+<pre class="r"><code>L = makeContrastsDream( form, metadata, 
+                        contrasts = c(&quot;timeSlut.DietFrankfurter - timeStart.DietFrankfurter + timeStart&quot;,
+                                      &quot;timeSlut.DietFrankfurterinulin - timeStart.DietFrankfurterinulin - timeSlut.DietFrankfurter + timeStart.DietFrankfurter&quot;))
+
+dimnames(L)[2]$Contrasts &lt;-  c(&#39;C_FF&#39;,&#39;C_Inulin&#39;) # the labels are tooo long, so here shorter versions
+plotContrasts(L)</code></pre>
+<p><img src="DAmixed_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+</div>
+<div id="fit-the-model" class="section level2" number="0.1">
+<h2><span class="header-section-number">0.1</span> Fit the model</h2>
+<pre class="r"><code>fit = dream( vobjDream, form, metadata, L)
+fit = eBayes(fit)</code></pre>
+</div>
+<div id="extract-results-and-plot-it" class="section level2"
+number="0.2">
+<h2><span class="header-section-number">0.2</span> Extract results and
+plot it</h2>
+<pre class="r"><code>res_Frankfurter &lt;- topTable( fit, coef=&quot;C_FF&quot;, number=1000) # we just export all
+res_Inulin &lt;- topTable( fit, coef=&quot;C_Inulin&quot;, number=1000) # we just export all
+
+TXtab &lt;- phyX %&gt;% tax_table() %&gt;% data.frame() %&gt;% # export TAxtable to glue onto results
+  rownames_to_column(&#39;otu&#39;) 
+
+res &lt;- bind_rows(res_Frankfurter %&gt;% mutate(contrast = &#39;Frankfurter vs Chow&#39;) %&gt;% rownames_to_column(&#39;otu&#39;), 
+                 res_Inulin %&gt;% mutate(contrast = &#39;FFinulin vs FF&#39;) %&gt;% rownames_to_column(&#39;otu&#39;)) %&gt;%
+  left_join(TXtab, by = &#39;otu&#39;) # add Taxinfo
+
+
+ggplot(data = res, aes(logFC, -log10(P.Value), label = otu, color = Rank2)) + 
+  geom_point() + 
+  geom_text(data = res[res$P.Value&lt;0.000001,]) + 
+  facet_wrap(~contrast)</code></pre>
+<p><img src="DAmixed_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>… Lets plot one example OTU_6</p>
+<pre class="r"><code>data.frame(metadata,otusel = as.numeric(otutb[&#39;OTU_6&#39;,])) %&gt;% 
+  ggplot(data =., aes(time,otusel + 1)) + geom_boxplot() + 
+  geom_line(aes(group = ID)) + 
+  scale_y_log10() + 
+  facet_wrap(~Diet)</code></pre>
+<p><img src="DAmixed_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
