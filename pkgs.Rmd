@@ -27,6 +27,8 @@ __vegan__: Vegan is a very useful package with a lot of functionality. However, 
 
 __ape__: For handling phylogenetic trees this package is good. 
 
+__picante__: Phylogenetic integration in analysis
+
 __DAtest__: This a custome made _single purpose_ package to be found on [github](https://github.com/Russel88/DAtest)
 
 __DESeq2__: This package is developed for _Differential Expression_ statistics for RNA-seq data. However, it is widely used for microbiome data as well. 
@@ -35,7 +37,9 @@ __metagenomeSeq__: Is a package for handling microbiome data. Here, especially t
 
 __limma__: A general package for multiple _Differential Expression_ stats developed for RNA-seq. 
 
-__dream__: As limma, but focusing on mixed models, for instance from longitudinal / repeated measures experiments.
+__variancePartition__ and __edgeR__: As limma, but makign mixed models doable, for instance from longitudinal / repeated measures experiments.
+
+__BiocParallel__: Getting stuff to run quicker. 
 
 __ggtree__: A nice vizualisation package for plotting tree, build on top of ggplot2 functionality.
 

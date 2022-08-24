@@ -44,7 +44,24 @@ What you see here, is some indications of _vaginal delivery_ results in lower di
 
 Shannon diversity is a metric with relatively high dependency on rare OTUs. _Simpson_ diversity (and _Inverse Simpson_) depends on the even-ness of the observed OTUs in the samples and is hence relatively independent on rare species, as is obvious from the mathematical formula. All three measures seems to be related to birth mode. 
 
-In order to get more hands-on experience with alpha diversity and especially how different preprocessing techniques influences these metrics, the exercise below show case how inherient the stocastisity of the sequencing depth is in the data. 
+## Faiths Phylogenetic Diversity {-}
+
+The alpha diversity metrics computed in phyloseq is _not_ taking phylogentics into account. However, there is one commenly used method _Faiths PD_ which can be calculated using the CRAN package picante. The calculation is easy, but adding it to all the other metrics, is a bit tricky: 
+
+```{r, message=F, eval=FALSE}
+library(picante)
+PD <- pd(t(phyX@otu_table),phyX@phy_tree, include.root = F)
+## Add it to the sample data 
+PD <- cbind(sample_data(phyX) %>% data.frame() %>% rownames_to_column('samples'),PD) %>% 
+  gather(variable,value,PD,SR) 
+# ... and merge with the rest of alpha diversity values
+AlphaD <- AlphaD %>% bind_rows(PD)
+```
+
+
+In order to get more hands-on experience with alpha diversity and especially how different preprocessing techniques influences these metrics, the exercise below show case how inherent the stocastisity of the sequencing depth is in the data. 
+
+
 
 ```{r, include=FALSE}
 cnt <- matrix(c(0.49,0.1,0.49,0.88,0.02,0.02),ncol = 3)
@@ -138,10 +155,12 @@ ggplot(data = AlphaDfilt, aes(Birth_mode,value)) +
   facet_wrap(~variable, scales = 'free')
 ```
 
-What you have learned here is that sequencing depth - and its variation between samples - inheriently affects data analysis. 
+What you have learned here is that sequencing depth - and its variation between samples - inherently affects data analysis. 
 Preprocessing is capable of handling these issues, but __only to some extend__.
 
 # References {-}
 
 Xia, Yinglin, Jun Sun, and Ding-Geng Chen. __Statistical analysis of microbiome data with R__. Springer, 2018. Chapter 6. 
+
+Faith D.P. (1992) __Conservation evaluation and phylogenetic diversity__. Biological Conservation, 61, 1-10.
 

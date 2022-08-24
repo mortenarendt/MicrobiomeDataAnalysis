@@ -361,10 +361,26 @@ on the even-ness of the observed OTUs in the samples and is hence
 relatively independent on rare species, as is obvious from the
 mathematical formula. All three measures seems to be related to birth
 mode.</p>
+<div id="faiths-phylogenetic-diversity"
+class="section level2 unnumbered">
+<h2 class="unnumbered">Faiths Phylogenetic Diversity</h2>
+<p>The alpha diversity metrics computed in phyloseq is <em>not</em>
+taking phylogentics into account. However, there is one commenly used
+method <em>Faiths PD</em> which can be calculated using the CRAN package
+picante. The calculation is easy, but adding it to all the other
+metrics, is a bit tricky:</p>
+<pre class="r"><code>library(picante)
+PD &lt;- pd(t(phyX@otu_table),phyX@phy_tree, include.root = F)
+## Add it to the sample data 
+PD &lt;- cbind(sample_data(phyX) %&gt;% data.frame() %&gt;% rownames_to_column(&#39;samples&#39;),PD) %&gt;% 
+  gather(variable,value,PD,SR) 
+# ... and merge with the rest of alpha diversity values
+AlphaD &lt;- AlphaD %&gt;% bind_rows(PD)</code></pre>
 <p>In order to get more hands-on experience with alpha diversity and
 especially how different preprocessing techniques influences these
-metrics, the exercise below show case how inherient the stocastisity of
+metrics, the exercise below show case how inherent the stocastisity of
 the sequencing depth is in the data.</p>
+</div>
 <div id="exercise" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Exercise</h1>
 <div id="with-no-prepro" class="section level2" number="1.1">
@@ -421,7 +437,7 @@ AlphaDfilt$X.SampleID &lt;- as.character(trimws(AlphaDfilt$X.SampleID))
 AlphaDfilt &lt;- merge(AlphaDfilt, libsize, by.x = &#39;X.SampleID&#39;, by.y = &#39;row.names&#39;)
 ggplot(data = AlphaDfilt, aes(...)) + </code></pre>
 <p>What you have learned here is that sequencing depth - and its
-variation between samples - inheriently affects data analysis.
+variation between samples - inherently affects data analysis.
 Preprocessing is capable of handling these issues, but <strong>only to
 some extend</strong>.</p>
 </div>
@@ -431,6 +447,8 @@ some extend</strong>.</p>
 <p>Xia, Yinglin, Jun Sun, and Ding-Geng Chen. <strong>Statistical
 analysis of microbiome data with R</strong>. Springer, 2018. Chapter
 6.</p>
+<p>Faith D.P. (1992) <strong>Conservation evaluation and phylogenetic
+diversity</strong>. Biological Conservation, 61, 1-10.</p>
 </div>
 
 
