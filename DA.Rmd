@@ -100,6 +100,8 @@ Perform tax glommeration (tax_glom()) at some taxonomic level, and re-run the an
 Do exactly the same just using t-test, wilcox tests as well as metagenomeseq's featureModel() and compare the results? Below are some code-inspiration. 
 
 ```{r,eval = T, message=FALSE}
+library(tidyverse)
+library(broom)
 library(metagenomeSeq)
 mgsdata <- phyloseq_to_metagenomeSeq(phyX)
 mgsdata <- cumNorm(mgsdata, p=.5)
@@ -255,14 +257,60 @@ pv_t <- apply(count_table, 2,function(x) t.test(x ~ predictor)$p.value)
 txtb <- data.frame(tax_table(phyX))
 
 df <- data.frame(est_DESeq = tb$log2FoldChange, se_DESeq = tb$lfcSE, pv_DESeq = tb$pvalue, pvadj_DESeq = tb$padj, 
-                 est_MGS = mgsfit$fitZeroLogNormal$logFC, se_MGS = mgsfit$fitZeroLogNormal$se, 
-                 pv_MGS = mgsfit$pvalues, 
+                 est_MGS = mgsfit@fitZeroLogNormal$logFC, se_MGS = mgsfit@fitZeroLogNormal$se, 
+                 pv_MGS = mgsfit@pvalues, 
                  pv_tt = pv_t)
 df <- cbind(df, txtb)
 df$name <- rownames(df)
 ggplot(data = df, aes(pv_DESeq, pv_MGS)) + geom_point() + scale_y_log10() + scale_x_log10()
 
 ```
+
+
+## Put infeerence on the phylogentic tree
+
+Because the number of taxa is larger, we restrict the plot to include the once with a somewhat significant signal. 
+
+```{r, include=F,eval=T}
+# save(file = 'DAresulst_csec.RData',list = c('df','phyX'))
+load(file = 'DAresulst_csec.RData')
+```
+
+```{r, eval = T, message=FALSE, warning=FALSE, fig.height=10, fig.width=10}
+library(ggtree)
+# Filter object and inference data. 
+dfsel <- df %>% 
+  dplyr::filter(pv_MGS<0.1) %>% 
+  dplyr::mutate(logFC = ifelse(abs(est_MGS)>1.5, sign(est_MGS)*1.5,est_MGS))
+
+phyobj <- phyX %>% 
+  subset_taxa(rownames(phyX@tax_table) %in% rownames(dfsel))  # this way to make sure it is not depend on order.
+
+TREE <- phy_tree(phyobj)
+TXtab <- as.data.frame(tax_table(phyobj))
+# merge on inferential stats
+AA <- TXtab %>% rownames_to_column('otu') %>% 
+  left_join(dfsel%>% rownames_to_column('otu') , by = 'otu')  
+# initiale tree
+g3 <- ggtree(TREE,layout = 'circular',branch.length="none")
+g3 <- g3 %<+%  AA 
+g3 <- g3 +
+  geom_tippoint(aes(x = x+1, fill = logFC, subset = isTip), shape=21,size = 2 )  +
+  # geom_text(aes(label = node)) + # use this to get node numbers, and then apply in geom_highlight
+  geom_hilight(node=1038, fill="gray10", alpha=.2) +
+  scale_fill_gradient2(low = 'red',high = 'darkgreen',
+                       midpoint = 0,mid = 'white',
+                       na.value = 'grey95',
+                       name = 'logFC')  + 
+  theme(legend.position="right",legend.title=element_blank())
+g3
+```
+
+Maybe save it instead of plotting it in R.: 
+```{r,eval=FALSE, message=FALSE, warning=FALSE}
+ggsave('cladogramwithinference.pdf',g3,height = 20, width = 20)
+```
+
   
 # References {-}
 

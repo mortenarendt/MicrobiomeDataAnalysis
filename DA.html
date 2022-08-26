@@ -13,7 +13,7 @@
 
 <title>Differential Abundance Testing</title>
 
-<script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.16/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -141,11 +141,15 @@ $(document).ready(function () {
     href = "index.html";
   var menuAnchor = $('a[href="' + href + '"]');
 
-  // mark it active
-  menuAnchor.tab('show');
-
-  // if it's got a parent navbar menu mark it active as well
-  menuAnchor.closest('li.dropdown').addClass('active');
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
 
   // Navbar adjustments
   var navHeight = $(".navbar").first().height() + 15;
@@ -433,7 +437,9 @@ re-run the analysis. Do you get the same results?</p>
 <p>Do exactly the same just using t-test, wilcox tests as well as
 metagenomeseq’s featureModel() and compare the results? Below are some
 code-inspiration.</p>
-<pre class="r"><code>library(metagenomeSeq)
+<pre class="r"><code>library(tidyverse)
+library(broom)
+library(metagenomeSeq)
 mgsdata &lt;- phyloseq_to_metagenomeSeq(phyX)
 mgsdata &lt;- cumNorm(mgsdata, p=.5)
 mod &lt;- model.matrix(~1+Birth_mode, data=pData(mgsdata))
@@ -469,6 +475,43 @@ ggplot(data = allres, aes(estimate,-log10(p.value), label = otu)) +
   geom_text(data = allres[allres$p.value&lt;10e-7 &amp; !is.na(allres$p.value),]) +
   facet_wrap(~test,nrow =  1, scales = &#39;free_x&#39;)</code></pre>
 <p><img src="DA_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+</div>
+<div id="put-infeerence-on-the-phylogentic-tree" class="section level2"
+number="1.9">
+<h2><span class="header-section-number">1.9</span> Put infeerence on the
+phylogentic tree</h2>
+<p>Because the number of taxa is larger, we restrict the plot to include
+the once with a somewhat significant signal.</p>
+<pre class="r"><code>library(ggtree)
+# Filter object and inference data. 
+dfsel &lt;- df %&gt;% 
+  dplyr::filter(pv_MGS&lt;0.1) %&gt;% 
+  dplyr::mutate(logFC = ifelse(abs(est_MGS)&gt;1.5, sign(est_MGS)*1.5,est_MGS))
+
+phyobj &lt;- phyX %&gt;% 
+  subset_taxa(rownames(phyX@tax_table) %in% rownames(dfsel))  # this way to make sure it is not depend on order.
+
+TREE &lt;- phy_tree(phyobj)
+TXtab &lt;- as.data.frame(tax_table(phyobj))
+# merge on inferential stats
+AA &lt;- TXtab %&gt;% rownames_to_column(&#39;otu&#39;) %&gt;% 
+  left_join(dfsel%&gt;% rownames_to_column(&#39;otu&#39;) , by = &#39;otu&#39;)  
+# initiale tree
+g3 &lt;- ggtree(TREE,layout = &#39;circular&#39;,branch.length=&quot;none&quot;)
+g3 &lt;- g3 %&lt;+%  AA 
+g3 &lt;- g3 +
+  geom_tippoint(aes(x = x+1, fill = logFC, subset = isTip), shape=21,size = 2 )  +
+  # geom_text(aes(label = node)) + # use this to get node numbers, and then apply in geom_highlight
+  geom_hilight(node=1038, fill=&quot;gray10&quot;, alpha=.2) +
+  scale_fill_gradient2(low = &#39;red&#39;,high = &#39;darkgreen&#39;,
+                       midpoint = 0,mid = &#39;white&#39;,
+                       na.value = &#39;grey95&#39;,
+                       name = &#39;logFC&#39;)  + 
+  theme(legend.position=&quot;right&quot;,legend.title=element_blank())
+g3</code></pre>
+<p><img src="DA_files/figure-html/unnamed-chunk-9-1.png" width="960" /></p>
+<p>Maybe save it instead of plotting it in R.:</p>
+<pre class="r"><code>ggsave(&#39;cladogramwithinference.pdf&#39;,g3,height = 20, width = 20)</code></pre>
 </div>
 </div>
 <div id="references" class="section level1 unnumbered">
