@@ -413,8 +413,8 @@ df &lt;- cbind(sample_data(phyXsel),OTUsel)
 g1 &lt;- ggplot(data = df, aes(OTU_154,Acetate)) + 
   geom_point() + stat_smooth(method = lm) + ggtitle(&#39;raw&#39;)
 
-g2 &lt;- ggplot(data = df, aes(log2(OTU_154 + 0.1),Acetate, color = Description)) + 
-  geom_point() + stat_smooth(method = lm) + ggtitle(&#39;log(count + pc)&#39;)
+g2 &lt;- ggplot(data = df, aes(log2(OTU_154 + 0.1),Acetate )) + 
+  geom_point(aes(color = Description)) + stat_smooth(method = lm) + ggtitle(&#39;log(count + pc)&#39;)
 
 gridExtra::grid.arrange(g1,g2, nrow = 1)</code></pre>
 <p><img src="hm_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>

@@ -116,8 +116,8 @@ df <- cbind(sample_data(phyXsel),OTUsel)
 g1 <- ggplot(data = df, aes(OTU_154,Acetate)) + 
   geom_point() + stat_smooth(method = lm) + ggtitle('raw')
 
-g2 <- ggplot(data = df, aes(log2(OTU_154 + 0.1),Acetate, color = Description)) + 
-  geom_point() + stat_smooth(method = lm) + ggtitle('log(count + pc)')
+g2 <- ggplot(data = df, aes(log2(OTU_154 + 0.1),Acetate )) + 
+  geom_point(aes(color = Description)) + stat_smooth(method = lm) + ggtitle('log(count + pc)')
 
 gridExtra::grid.arrange(g1,g2, nrow = 1)
 ```
