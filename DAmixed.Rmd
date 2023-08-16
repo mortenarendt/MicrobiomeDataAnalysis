@@ -59,7 +59,8 @@ param = SnowParam(4, "SOCK", progressbar=TRUE)
 
 ```{r}
 # The variable to be tested must be a fixed effect
-form <- ~ time + time:Diet  + (1|ID)
+# form <- ~ time + time:Diet  + (1|ID)
+form <- ~ 0 + time:Diet  + (1|ID)
 ```
 
 ## Run the model {-}
@@ -87,17 +88,21 @@ However, what we are interested in is the contrasts.
 
 ## Contrasts  {-}
 
-This is refered to as contrasts. I.e. compare the effect from _Start_ to _Slut_ for Frankfurter with the same for chow; A change versus a change. 
+This is refered to as contrasts. I.e. compare the effect from _Start_ to _Slut_ for Frankfurter with the same for chow; A change versus a change or also known as _Differences in Differences_
 
 This is specified using the coloumn names from the output above.
 Here the effect of Frankfurter is compare to the control diet (Chow). 
-Note that Chow is not mentioned in the effects, as this is by the model set to the reference level. 
-Likewise the effect of Inulin is included as a contrast towards Frankfurter alone. 
+
+In the specification of the model above, we include 0 to remove the intercept, and : to avoid main effects in the interactionmodel. That produce an output from the the 2 x 3 design as just the flat means for each of the 6 groups (more or less). Establishing a difference from start to end of trial is hence a contrast of two terms, while a difference of differences is made up by four terms. 
 
 ```{r, fig.width=7}
 L = makeContrastsDream( form, metadata, 
-                        contrasts = c("timeSlut.DietFrankfurter - timeStart.DietFrankfurter + timeStart",
-                                      "timeSlut.DietFrankfurterinulin - timeStart.DietFrankfurterinulin - timeSlut.DietFrankfurter + timeStart.DietFrankfurter"))
+                        contrasts = c("timeSlut.DietFrankfurter - timeStart.DietFrankfurter - 
+                                      timeSlut.DietChow + timeStart.DietChow", 
+                                      
+                                      "timeSlut.DietFrankfurterinulin - 
+                                      timeStart.DietFrankfurterinulin - 
+                                      timeSlut.DietChow + timeStart.DietChow"))
 
 dimnames(L)[2]$Contrasts <-  c('C_FF','C_Inulin') # the labels are tooo long, so here shorter versions
 plotContrasts(L)

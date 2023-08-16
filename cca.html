@@ -13,7 +13,7 @@
 
 <title>Canonical Correlation Analysis</title>
 
-<script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -141,11 +141,15 @@ $(document).ready(function () {
     href = "index.html";
   var menuAnchor = $('a[href="' + href + '"]');
 
-  // mark it active
-  menuAnchor.tab('show');
-
-  // if it's got a parent navbar menu mark it active as well
-  menuAnchor.closest('li.dropdown').addClass('active');
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
 
   // Navbar adjustments
   var navHeight = $(".navbar").first().height() + 15;
@@ -174,8 +178,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -183,16 +187,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -453,16 +450,16 @@ R &lt;- fixKernelMatrix(exp(-D))</code></pre>
 
 print(res_pen$res_df)</code></pre>
 <pre><code>##            A p_corr_cmp1 p_corr_cmp2 p_var_cmp1 p_var_cmp2
-## 1  0.0000000  0.00000000  0.00000000          0  0.0000000
-## 2  0.1111111  0.00000000  0.00000000          0  0.0000000
-## 3  0.2222222  0.00000000  0.00000000          0  0.0000000
-## 4  0.3333333  0.06666667  0.00000000          0  0.0000000
-## 5  0.4444444  0.00000000  0.00000000          0  0.0000000
-## 6  0.5555556  0.00000000  0.00000000          0  0.0000000
-## 7  0.6666667  0.00000000  0.03333333          0  0.0000000
-## 8  0.7777778  0.03333333  0.00000000          0  0.0000000
-## 9  0.8888889  0.03333333  0.00000000          0  0.0000000
-## 10 1.0000000  0.00000000  0.20000000          0  0.4333333</code></pre>
+## 1  0.0000000           0  0.00000000          0 0.03333333
+## 2  0.1111111           0  0.00000000          0 0.00000000
+## 3  0.2222222           0  0.03333333          0 0.00000000
+## 4  0.3333333           0  0.00000000          0 0.00000000
+## 5  0.4444444           0  0.00000000          0 0.00000000
+## 6  0.5555556           0  0.06666667          0 0.00000000
+## 7  0.6666667           0  0.00000000          0 0.00000000
+## 8  0.7777778           0  0.00000000          0 0.03333333
+## 9  0.8888889           0  0.00000000          0 0.00000000
+## 10 1.0000000           0  0.16666667          0 0.36666667</code></pre>
 <p>Now we take a descision on which model to use and extract it in a
 similar fashion as above. Resulting in the microbiome loadingplot
 below.</p>

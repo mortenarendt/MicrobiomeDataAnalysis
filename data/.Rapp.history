@@ -1,0 +1,6 @@
+load("/Users/morten.arendt/Dropbox/Backup/MyDocumentsOnC/Course and teaching/Advanced_MicrobiomeAnalysis/MicrobiomeDataAnalysis/data/fermented_groupings_total_intake.rds")
+load("/Users/morten.arendt/Dropbox/Backup/MyDocumentsOnC/Course and teaching/Advanced_MicrobiomeAnalysis/MicrobiomeDataAnalysis/data/fermented_groupings_intake.rds")
+load("/Users/morten.arendt/Dropbox/Backup/MyDocumentsOnC/Course and teaching/Advanced_MicrobiomeAnalysis/MicrobiomeDataAnalysis/data/fermented_food_ps_obj_fwdOnly.rds")
+load("/Users/morten.arendt/Dropbox/Backup/MyDocumentsOnC/Course and teaching/Advanced_MicrobiomeAnalysis/MicrobiomeDataAnalysis/data/phyloseq_obj_PilotStudy_log.rds")
+load("/Users/morten.arendt/Dropbox/Backup/MyDocumentsOnC/Course and teaching/Advanced_MicrobiomeAnalysis/MicrobiomeDataAnalysis/data/phyloseq_obj_PilotStudy_tree_redo_fwdONLY.rds")
+load("/Users/morten.arendt/Dropbox/Backup/MyDocumentsOnC/Course and teaching/Advanced_MicrobiomeAnalysis/MicrobiomeDataAnalysis/data/samdf_diversity.rds")

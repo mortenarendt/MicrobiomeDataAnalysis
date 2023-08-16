@@ -13,7 +13,7 @@
 
 <title>Differential Abundance for Repeated measures</title>
 
-<script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -141,11 +141,15 @@ $(document).ready(function () {
     href = "index.html";
   var menuAnchor = $('a[href="' + href + '"]');
 
-  // mark it active
-  menuAnchor.tab('show');
-
-  // if it's got a parent navbar menu mark it active as well
-  menuAnchor.closest('li.dropdown').addClass('active');
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
 
   // Navbar adjustments
   var navHeight = $(".navbar").first().height() + 15;
@@ -174,8 +178,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -183,16 +187,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -427,7 +424,8 @@ param = SnowParam(4, &quot;SOCK&quot;, progressbar=TRUE)</code></pre>
 <div id="specify-the-model" class="section level2 unnumbered">
 <h2 class="unnumbered">Specify the model</h2>
 <pre class="r"><code># The variable to be tested must be a fixed effect
-form &lt;- ~ time + time:Diet  + (1|ID)</code></pre>
+# form &lt;- ~ time + time:Diet  + (1|ID)
+form &lt;- ~ 0 + time:Diet  + (1|ID)</code></pre>
 </div>
 <div id="run-the-model" class="section level2 unnumbered">
 <h2 class="unnumbered">Run the model</h2>
@@ -442,39 +440,50 @@ fitmm = eBayes(fitmm)</code></pre>
 <div id="look-at-the-results" class="section level2 unnumbered">
 <h2 class="unnumbered">Look at the results</h2>
 <pre class="r"><code>topTable( fitmm) %&gt;% data.frame() %&gt;% rownames_to_column(&#39;asv&#39;)</code></pre>
-<pre><code>##        asv  timeStart timeSlut.DietFrankfurter timeStart.DietFrankfurter
-## 1  OTU_335  0.1297187                -9.220387                0.24551572
-## 2  OTU_104 -0.1473365                -7.785734                0.58570096
-## 3  OTU_158 -0.3457801                -5.989588               -0.05934233
-## 4   OTU_61  0.6254242                -7.621000               -0.18189159
-## 5   OTU_11 -0.2638319                -7.247096               -0.27248001
-## 6  OTU_322  0.3836453               -10.963428                0.29960589
-## 7  OTU_184 -0.2080900                -8.307366                0.54575177
-## 8    OTU_1  0.3860534               -11.383298                0.31251595
-## 9  OTU_392  0.5387490                -8.156050                0.16968601
-## 10 OTU_316 -0.2278700                -7.261509               -0.21363817
-##    timeSlut.DietFrankfurterinulin timeStart.DietFrankfurterinulin   AveExpr
-## 1                       -7.203989                       0.6436130  9.572451
-## 2                       -5.945298                       0.8010878  8.263286
-## 3                       -8.931951                       0.4146616  9.287396
-## 4                       -7.146310                       0.7132015  8.075186
-## 5                      -10.635354                       0.2701809 11.094185
-## 6                       -7.459150                       0.3698238 11.116804
-## 7                       -6.711202                       0.4552153  8.914544
-## 8                       -7.479613                       0.4195833 11.902923
-## 9                       -6.207145                       0.5919376  8.836984
-## 10                      -8.540557                       0.3240162 10.071743
-##           F      P.Value    adj.P.Val    F.std
-## 1  132.6506 1.420810e-31 2.737620e-29 30.91393
-## 2  132.6494 1.421192e-31 2.737620e-29 30.91382
-## 3  131.7727 1.711013e-31 2.737620e-29 30.83813
-## 4  130.1487 2.420170e-31 2.904204e-29 30.69671
-## 5  127.1521 4.637458e-31 4.451960e-29 30.43144
-## 6  118.1693 3.552799e-30 2.842239e-28 29.60058
-## 7  113.8911 9.845909e-30 6.577047e-28 29.18448
-## 8  113.4487 1.096174e-29 6.577047e-28 29.14065
-## 9  106.2699 6.609330e-29 3.524976e-27 28.40689
-## 10 105.8610 7.345179e-29 3.525686e-27 28.36377</code></pre>
+<pre><code>##        asv timeSlut.DietChow timeStart.DietChow timeSlut.DietFrankfurter
+## 1  OTU_372         13.825272           14.44325                16.350681
+## 2    OTU_3         14.277123           14.86154                16.717883
+## 3   OTU_14          9.730454           10.65863                14.601279
+## 4   OTU_51         10.745896           11.46514                10.236039
+## 5   OTU_19         14.408681           13.52770                 8.909757
+## 6    OTU_4         13.206092           15.21415                13.989912
+## 7   OTU_11         14.922619           14.65879                 7.675523
+## 8  OTU_431         13.114981           12.64798                 7.995959
+## 9  OTU_306         13.636541           12.95483                12.045826
+## 10  OTU_13         12.522803           13.23759                12.711333
+##    timeStart.DietFrankfurter timeSlut.DietFrankfurterinulin
+## 1                   14.20794                      15.115094
+## 2                   14.68724                      15.501351
+## 3                   10.07538                      13.750277
+## 4                   11.29011                      10.225030
+## 5                   14.36788                       5.167834
+## 6                   15.91445                      13.369206
+## 7                   14.38631                       4.287265
+## 8                   13.43585                       5.947968
+## 9                   12.76416                      12.901823
+## 10                  13.87313                      12.428481
+##    timeStart.DietFrankfurterinulin  AveExpr         F      P.Value    adj.P.Val
+## 1                         14.39189 14.86067 1509.4112 9.918514e-65 4.760887e-62
+## 2                         14.82856 15.28019 1468.9729 2.270717e-64 5.449722e-62
+## 3                         10.26513 11.82757 1001.6910 2.625144e-59 4.200230e-57
+## 4                         11.27411 10.82088  931.5230 2.384366e-58 2.861240e-56
+## 5                         14.31967 11.27606  905.1637 5.700295e-58 5.472283e-56
+## 6                         15.48022 14.60381  852.4721 3.518427e-57 2.814742e-55
+## 7                         14.92897 11.09418  841.6390 5.185987e-57 3.556105e-55
+## 8                         13.37876 10.66977  834.6124 6.687445e-57 3.858178e-55
+## 9                         12.89817 12.73914  832.4529 7.234084e-57 3.858178e-55
+## 10                        14.07141 13.19170  807.0987 1.847908e-56 8.869959e-55
+##       F.std
+## 1  52.26774
+## 2  51.98809
+## 3  48.04994
+## 4  47.30412
+## 5  47.00946
+## 6  46.39404
+## 7  46.26285
+## 8  46.17686
+## 9  46.15029
+## 10 45.83312</code></pre>
 <p>This is overall effects. Obviously, diet changes the microbiome.
 However, what we are interested in is the contrasts.</p>
 </div>
@@ -482,15 +491,23 @@ However, what we are interested in is the contrasts.</p>
 <h2 class="unnumbered">Contrasts</h2>
 <p>This is refered to as contrasts. I.e. compare the effect from
 <em>Start</em> to <em>Slut</em> for Frankfurter with the same for chow;
-A change versus a change.</p>
+A change versus a change or also known as <em>Differences in
+Differences</em></p>
 <p>This is specified using the coloumn names from the output above. Here
-the effect of Frankfurter is compare to the control diet (Chow). Note
-that Chow is not mentioned in the effects, as this is by the model set
-to the reference level. Likewise the effect of Inulin is included as a
-contrast towards Frankfurter alone.</p>
+the effect of Frankfurter is compare to the control diet (Chow).</p>
+<p>In the specification of the model above, we include 0 to remove the
+intercept, and : to avoid main effects in the interactionmodel. That
+produce an output from the the 2 x 3 design as just the flat means for
+each of the 6 groups (more or less). Establishing a difference from
+start to end of trial is hence a contrast of two terms, while a
+difference of differences is made up by four terms.</p>
 <pre class="r"><code>L = makeContrastsDream( form, metadata, 
-                        contrasts = c(&quot;timeSlut.DietFrankfurter - timeStart.DietFrankfurter + timeStart&quot;,
-                                      &quot;timeSlut.DietFrankfurterinulin - timeStart.DietFrankfurterinulin - timeSlut.DietFrankfurter + timeStart.DietFrankfurter&quot;))
+                        contrasts = c(&quot;timeSlut.DietFrankfurter - timeStart.DietFrankfurter - 
+                                      timeSlut.DietChow + timeStart.DietChow&quot;, 
+                                      
+                                      &quot;timeSlut.DietFrankfurterinulin - 
+                                      timeStart.DietFrankfurterinulin - 
+                                      timeSlut.DietChow + timeStart.DietChow&quot;))
 
 dimnames(L)[2]$Contrasts &lt;-  c(&#39;C_FF&#39;,&#39;C_Inulin&#39;) # the labels are tooo long, so here shorter versions
 plotContrasts(L)</code></pre>
