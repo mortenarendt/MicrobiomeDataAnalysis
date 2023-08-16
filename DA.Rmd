@@ -9,6 +9,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE, warning = F, eval = F)
 ```
 
+TEST 
 Having a study design in with there are two (or more) groups of samples, say male/female, diet1/diet2, etc. one is often interested in knowing: 
 
 * Is there a difference between the groups? 
