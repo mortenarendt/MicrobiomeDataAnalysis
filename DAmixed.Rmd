@@ -197,6 +197,8 @@ summary(m)
 Looking at the random effect, we see that the variance related to individual is larger than the residual variation, meaning that there indeed is a lot of week to week variation conserved in the microbiome. 
 
 
+Lets try DA on this dataset. Here, all code in one go. 
+
 ```{r}
 phyXsel <- phyX %>% filter_taxa(function(x) sum(x > 0)>20, TRUE)
 
@@ -226,18 +228,17 @@ fitmm = eBayes(fitmm)
 L = makeContrastsDream( form, metadata, 
                         contrasts = c("time9.GroupFermented - time1.GroupFermented",
                                       "time9.GroupFiber - time1.GroupFiber",
-                                      "time9.GroupFermented - time1.GroupFermented - time9.GroupFiber + time1.GroupFiber"))
+                                      "time9.GroupFermented - time1.GroupFermented -
+                                      time9.GroupFiber + time1.GroupFiber"))
 
 dimnames(L)[2]$Contrasts <-  c('Eff_ferm','Eff_fiber','DDferm_fiber') # the labels are tooo long, so here shorter versions
 # plotContrasts(L)
-```
 
-
-```{r}
 fit = dream( vobjDream, form, metadata, L)
 fit = eBayes(fit)
 ```
 
+Collect results and plot
 
 ```{r}
 res_ferm <- topTable( fit, coef="Eff_ferm" ,number=1000) # we just export all
@@ -262,8 +263,8 @@ res %>%
 
 ```{r}
 res %>% arrange(adj.P.Val) %>% 
-  select(logFC,P.Value,adj.P.Val, B, contrast, Class:Species)
-  head
+  select(logFC,P.Value,adj.P.Val, B, contrast, Class:Species) %>% 
+  head(10)
 ```
 
 Plot the top flyers
