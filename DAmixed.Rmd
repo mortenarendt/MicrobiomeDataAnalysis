@@ -147,3 +147,140 @@ data.frame(metadata,otusel = as.numeric(otutb['OTU_6',])) %>%
 
 ```
 
+
+# Another Example
+
+The study [Wastyk, H. C., Fragiadakis, G. K., Perelman, D., Dahan, D., Merrill, B. D., Feiqiao, B. Y., ... & Sonnenburg, J. L. (2021). Gut-microbiota-targeted diets modulate human immune status. Cell, 184(16), 4137-4153.](https://www.cell.com/cell/fulltext/S0092-8674(21)00754-6) has put all their data out on [github](https://github.com/SonnenburgLab/fiber-fermented-study)
+
+try downloading the _phyloseq_obj_PilotStudy_log.rds_ from the data/16S folder and import it into R
+
+```{r}
+phyX <- readRDS('../MicrobiomeDataAnalysis/_site/data/phyloseq_obj_PilotStudy_log.rds')
+phyX
+```
+
+... Take a look at the design
+
+```{r}
+table(paste(phyX@sam_data$Participant,phyX@sam_data$Group), phyX@sam_data$Timepoint)
+```
+
+It is a two armed longitudinal study with up to 9 timepoints. 
+
+
+## Mixed model on Alpha-div
+
+Before doing bug-per-bug analysis, the microbiome is condensed into one vector and used as response in an univariate mixed model. For the sake of the example, we use Faith phylogenetic diversity index as alpha diversity measure.
+
+```{r}
+library(picante)
+FaithPD = picante::pd(samp = otu_table(phyX), tree = phy_tree(phyX), include.root = F)$PD
+# combine with meta data
+samdata <- data.frame(phyX@sam_data, FaithPD)
+
+# plot it connecting the individuals with lines
+ggplot(data = samdata, aes(Timepoint,FaithPD, group = Participant, color =Group)) + geom_point() + geom_line()
+
+
+library(lme4)
+library(lmerTest)
+m <- lmer(data = samdata, FaithPD~factor(Timepoint)*Group + (1|Participant))
+anova(m)
+```
+
+In line with the plot, there is not much of differences between groups and neither over time. 
+
+```{r}
+summary(m)
+```
+
+Looking at the random effect, we see that the variance related to individual is larger than the residual variation, meaning that there indeed is a lot of week to week variation conserved in the microbiome. 
+
+
+```{r}
+phyXsel <- phyX %>% filter_taxa(function(x) sum(x > 0)>20, TRUE)
+
+otutb <- as.data.frame(phyXsel@otu_table)
+metadata <- phyXsel %>% sample_data() %>% data.frame() %>% 
+  mutate(time = Timepoint %>% factor())
+
+GM = otutb %>% t() %>% DGEList()
+GM = calcNormFactors(GM)
+
+# Specify parallel processing parameters
+# this is used implicitly by dream() to run in parallel
+param = SnowParam(4, "SOCK", progressbar=TRUE)
+
+
+form <- ~ 0 + time:Group + (1|Participant)
+
+# estimate weights using linear mixed model of dream
+vobjDream = voomWithDreamWeights( GM, form, metadata, BPPARAM=param )
+
+# Fit the dream model on each gene
+# By default, uses the Satterthwaite approximation for the hypothesis test
+fitmm = dream( vobjDream, form, metadata )
+fitmm = eBayes(fitmm)
+# topTable( fitmm) %>% data.frame() %>% rownames_to_column('asv')
+
+L = makeContrastsDream( form, metadata, 
+                        contrasts = c("time9.GroupFermented - time1.GroupFermented",
+                                      "time9.GroupFiber - time1.GroupFiber",
+                                      "time9.GroupFermented - time1.GroupFermented - time9.GroupFiber + time1.GroupFiber"))
+
+dimnames(L)[2]$Contrasts <-  c('Eff_ferm','Eff_fiber','DDferm_fiber') # the labels are tooo long, so here shorter versions
+# plotContrasts(L)
+```
+
+
+```{r}
+fit = dream( vobjDream, form, metadata, L)
+fit = eBayes(fit)
+```
+
+
+```{r}
+res_ferm <- topTable( fit, coef="Eff_ferm" ,number=1000) # we just export all
+res_fiber <- topTable( fit, coef="Eff_fiber" ,number=1000) 
+res_dd <- topTable( fit, coef="DDferm_fiber" ,number=1000) 
+
+TXtab <- phyXsel %>% tax_table() %>% data.frame() %>% # export TAxtable to glue onto results
+  rownames_to_column('otu') 
+
+res <- bind_rows(res_ferm %>% mutate(contrast = 'Fermented') %>% rownames_to_column('otu'), 
+                 res_fiber %>% mutate(contrast = 'Fiber') %>% rownames_to_column('otu'),
+                 res_dd %>% mutate(contrast = 'Ferm - Fiber') %>% rownames_to_column('otu')) %>%
+  left_join(TXtab, by = 'otu') # add Taxinfo
+
+
+res %>% 
+  mutate(Family2 = Family %>% factor() %>% fct_lump_n(5)) %>% 
+  ggplot(data = ., aes(logFC, -log10(P.Value), label = otu, color = Family2)) + 
+  geom_point() + 
+  facet_wrap(~contrast)
+```
+
+```{r}
+res %>% arrange(adj.P.Val) %>% 
+  select(logFC,P.Value,adj.P.Val, B, contrast, Class:Species)
+  head
+```
+
+Plot the top flyers
+
+```{r}
+sel <- res %>% arrange(adj.P.Val) %>% head(3) # dig the strongest results out
+
+# combine with meta data
+xx <- otutb[,colnames(otutb) %in% sel$otu] %>% 
+  data.frame() %>% 
+  cbind(metadata)
+
+# plot it
+xx %>% 
+  gather(otu,abu,-c(SampleID:time)) %>% 
+  ggplot(data = ., aes(time,abu, fill = Group)) + 
+  geom_boxplot() + scale_y_sqrt() + 
+  facet_wrap(~otu)
+```
+
