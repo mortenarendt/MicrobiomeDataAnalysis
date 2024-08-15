@@ -25,8 +25,9 @@ For each sample a single measure can be calculated describing the diversity with
 
 These can easily be calculated and visualized according to a given design. 
 
-```{r, eval = T}
+```{r, eval = T, fig.height=5}
 library(ggplot2)
+library(ggpubr)
 library(phyloseq)
 load('./data/Mice_csec.RData')
 
@@ -36,11 +37,12 @@ AlphaD <- pp$data
 ggplot(data = AlphaD, aes(Birth_mode, value, fill = Birth_mode)) + 
   geom_boxplot() + 
   geom_jitter() + 
-  facet_wrap(~variable, scales = 'free') + 
+  stat_compare_means(vjust = 1,method = 't.test') + 
+  facet_wrap(~variable, nrow = 2, scales = 'free') + 
   theme(legend.position = 'top')
 ```
 
-What you see here, is some indications of _vaginal delivery_ results in lower diversity. 
+What you see here, is some indications of _vaginal delivery_ results in lower diversity. However, due to the low n significance is hard to achieve. 
 
 Shannon diversity is a metric with relatively high dependency on rare OTUs. _Simpson_ diversity (and _Inverse Simpson_) depends on the even-ness of the observed OTUs in the samples and is hence relatively independent on rare species, as is obvious from the mathematical formula. All three measures seems to be related to birth mode. 
 

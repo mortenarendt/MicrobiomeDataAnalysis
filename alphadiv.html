@@ -13,7 +13,7 @@
 
 <title>Alpha Diversity</title>
 
-<script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.27/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -338,6 +338,7 @@ different versions.</p>
 <p>These can easily be calculated and visualized according to a given
 design.</p>
 <pre class="r"><code>library(ggplot2)
+library(ggpubr)
 library(phyloseq)
 load(&#39;./data/Mice_csec.RData&#39;)
 
@@ -347,11 +348,13 @@ AlphaD &lt;- pp$data
 ggplot(data = AlphaD, aes(Birth_mode, value, fill = Birth_mode)) + 
   geom_boxplot() + 
   geom_jitter() + 
-  facet_wrap(~variable, scales = &#39;free&#39;) + 
+  stat_compare_means(vjust = 1,method = &#39;t.test&#39;) + 
+  facet_wrap(~variable, nrow = 2, scales = &#39;free&#39;) + 
   theme(legend.position = &#39;top&#39;)</code></pre>
 <p><img src="alphadiv_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
 <p>What you see here, is some indications of <em>vaginal delivery</em>
-results in lower diversity.</p>
+results in lower diversity. However, due to the low n significance is
+hard to achieve.</p>
 <p>Shannon diversity is a metric with relatively high dependency on rare
 OTUs. <em>Simpson</em> diversity (and <em>Inverse Simpson</em>) depends
 on the even-ness of the observed OTUs in the samples and is hence

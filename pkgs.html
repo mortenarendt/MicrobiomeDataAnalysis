@@ -13,7 +13,7 @@
 
 <title>Packages</title>
 
-<script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.27/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -325,24 +325,41 @@ $(document).ready(function () {
 </div>
 <div id="packages" class="section level1 unnumbered">
 <h1 class="unnumbered">Packages</h1>
+<div id="from-cran" class="section level2 unnumbered">
+<h2 class="unnumbered">From CRAN</h2>
+<p>These can be installed directly using install.packages()</p>
 <p><strong>ggplot2</strong>: For plotting data ggplot2 is very useful -
 can be installed from CRAN</p>
+<p><strong>ggpubr</strong>: For modifying ggplot2 plots to be even more
+informative</p>
+<p><strong>ggrepel</strong>, <strong>ggnetwork</strong> and
+<strong>pheatmap</strong>: additional plotting tools</p>
 <p><strong>tidyverse</strong>: A collection of general data handling
 tools gaining much popularity within the R user community</p>
+<p><strong>broom</strong>: A tidyverse add-on making it easy to compute
+the same type of model across subsets of data and/or several response
+variables</p>
+<p><strong>picante</strong>: Phylogenetic integration in analysis</p>
+<p><strong>ape</strong>: For handling phylogenetic trees this package is
+good.</p>
+<p><strong>vegan</strong>: Vegan is a very useful package with a lot of
+functionality. However, here we use only the adonis() function.</p>
+<p><strong>phyloseqGraphTest</strong> and <strong>compositions</strong>:
+Specific tools microbiome data</p>
+<p><strong>readr</strong>, <strong>glue</strong>,
+<strong>reshape2</strong>, <strong>DT</strong>,
+<strong>lsmeans</strong>, and <strong>devtools</strong>: additional
+tools for making life easier.</p>
+<p><strong>BiocManager</strong>: A package to install things from
+Bioconductor</p>
+</div>
+<div id="from-bioconductor" class="section level2 unnumbered">
+<h2 class="unnumbered">From Bioconductor</h2>
+<p>These can be installed using the BiocManager package:
+BiocManager::install()</p>
 <p><strong>phyloseq</strong>: There are several packages for handling
 microbiome type data. For this course we use phyloseq see <a
 href="https://joey711.github.io/phyloseq/tutorials-index.html">tutorial</a></p>
-<p><strong>metagMisc</strong>: A package with functionallity for
-cross-talk between different packages found on <a
-href="https://rdrr.io/github/vmikk/metagMisc/">github</a></p>
-<p><strong>vegan</strong>: Vegan is a very useful package with a lot of
-functionality. However, here we use only the adonis() function.</p>
-<p><strong>ape</strong>: For handling phylogenetic trees this package is
-good.</p>
-<p><strong>picante</strong>: Phylogenetic integration in analysis</p>
-<p><strong>DAtest</strong>: This a custome made <em>single purpose</em>
-package to be found on <a
-href="https://github.com/Russel88/DAtest">github</a></p>
 <p><strong>DESeq2</strong>: This package is developed for
 <em>Differential Expression</em> statistics for RNA-seq data. However,
 it is widely used for microbiome data as well.</p>
@@ -354,13 +371,31 @@ featureModel() is used.</p>
 <p><strong>variancePartition</strong> and <strong>edgeR</strong>: As
 limma, but makign mixed models doable, for instance from longitudinal /
 repeated measures experiments.</p>
-<p><strong>BiocParallel</strong>: Getting stuff to run quicker.</p>
 <p><strong>ggtree</strong>: A nice vizualisation package for plotting
 tree, build on top of ggplot2 functionality.</p>
+<p><strong>BiocParallel</strong>: Getting stuff to run quicker.</p>
+<p><strong>vsn</strong>: Normalizing toolbox ported from Microarray data
+analysis.</p>
+</div>
+<div id="from-github" class="section level2 unnumbered">
+<h2 class="unnumbered">From Github</h2>
+<p>These can be installed using the packages devtools or remotes (both
+available on CRAN) usign devtools::install_github() or
+remotes::install_github()</p>
+<p><strong>metagMisc</strong>: A package with functionallity for
+cross-talk between different packages found on <a
+href="https://rdrr.io/github/vmikk/metagMisc/">github</a></p>
+<p><strong>DAtest</strong>: This a custome made <em>single purpose</em>
+package to be found on <a
+href="https://github.com/Russel88/DAtest">github</a></p>
+<p><strong>qiime2R</strong>: Package for porting between QIIME (python
+environment) and R. Can be installed by
+devtools::install_github(“jbisanz/qiime2R”).</p>
 <p>For details on installation and getting-started, please check
 vignettes, help-documentation, google, youtube,…. Most things are pretty
 easy to copy-paste and run from examples and then exchange with your own
 data.</p>
+</div>
 </div>
 
 
