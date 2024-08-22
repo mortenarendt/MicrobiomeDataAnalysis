@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Mediation analysis using Propensity scoring</title>
+
+<script src="site_libs/header-attrs-2.27/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Microbiome Data Analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="about.html">Home</a>
+</li>
+<li>
+  <a href="pkgs.html">Installation</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Descriptives
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="prepro.html">Preprocessing</a>
+    </li>
+    <li>
+      <a href="alphadiv.html">alpha diversity</a>
+    </li>
+    <li>
+      <a href="betadiv.html">beta diversity</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Statistical inference
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="DA.html">Differential Abundance</a>
+    </li>
+    <li>
+      <a href="DAmixed.html">Differential Abundance - Repeated measures</a>
+    </li>
+    <li>
+      <a href="adonistest.html">ANOVA on beta diversity</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Supervised Multivariate models
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="hm.html">Heatmaps</a>
+    </li>
+    <li>
+      <a href="cca.html">Canonical Correlation Analysis</a>
+    </li>
+    <li>
+      <a href="mediationanalysis.html">Mediation analysis via Propensity Scoring</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="https://github.com/mortenarendt/MicrobiomeDataAnalysis/tree/master/data">Data</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Mediation analysis using Propensity
+scoring</h1>
+
+</div>
+
+
+<div id="mediation" class="section level1 unnumbered">
+<h1 class="unnumbered">Mediation</h1>
+<p>Microbiome is in many cases suspected to be the mechanistic entity
+causing a correlation between a treatment and a phenotype.</p>
+<p>Think about the hygiene hypothesis, where the environment (siblings /
+household-size, birth mode, rural living, antibiotics etc.) is found
+related to a range of chronic diseases including asthma, diabetes,
+allergy etc. Here, one speculates that the environment causes a shift in
+the microbiome which then in turn gives rise to the disease.</p>
+<p>This is classical mediation setup, just with the tweek that the
+microbiome is not a univariate entity, but merely a multivariate feature
+set.</p>
+</div>
+<div id="propensity-scoring" class="section level1 unnumbered">
+<h1 class="unnumbered">Propensity scoring</h1>
+<p>Propensity scoring is the concept where the relation between say a
+treatment and a multivariate data block is turned into a univariate
+vector. This can sound tricky, but in principle, what is done is that a
+machine learning model is build between the treatment and the
+multivariate data and the predictions is then used as this
+propensity.</p>
+</div>
+<div id="an-example" class="section level1 unnumbered">
+<h1 class="unnumbered">An example</h1>
+<p>The mice birth mode data has a total of n = 31 mice delivered by
+either vaginal birth or c-section. Microbiome data is collected, and the
+previous exercises on these data clearly shows that indeed the birth
+mode matters on the microbiome.</p>
+<p>Additionally, measures of immune activity is collected as well
+(available from the sample_data).</p>
+<p>In order to do mediation analysis of how the microbiome mediates the
+effect of birth mode to immune functionality encompasses the following
+elements</p>
+<ul>
+<li>Establish a univariate propensity score by classification of birth
+mode using microbiome data.</li>
+<li>Run analysis of birth mode versus immune mediators</li>
+<li>Run analysis of propensity score versus immune mediators</li>
+<li>Combined mediation analysis on markers with univariate effects</li>
+</ul>
+<div id="classification-of-birth-mode-using-microbiome-data"
+class="section level2 unnumbered">
+<h2 class="unnumbered">Classification of Birth mode using microbiome
+data</h2>
+<p>Here we use the general ML package caret to train and crossvalidate a
+model classifying birth mode given microbiome data. It takes a fair bit
+of data wrangling to make it work, but google the scripting and/or copy
+paste below</p>
+<div id="setting-up-the-data" class="section level3 unnumbered">
+<h3 class="unnumbered">Setting up the data</h3>
+<pre class="r"><code>library(phyloseq)
+library(caret)
+library(broom)
+library(tidyverse)
+load(&#39;./data/Mice_csec.RData&#39;)
+
+# Preprocess and define GM samples 
+pc &lt;- 0.0001 # psedo count for log-trans
+phyXpp &lt;- phyX %&gt;% 
+  transform_sample_counts(function(x) x / sum(x)) %&gt;% 
+  filter_taxa(function(x) sum(x &gt; 0)&gt;10, TRUE) %&gt;% 
+  transform_sample_counts(function(x) log(x + pc))
+
+# extract feature matrix
+X &lt;- phyXpp@otu_table %&gt;%  t %&gt;%  data.frame()
+# add classes
+X$trt &lt;- as.vector(phyXpp@sam_data$Birth_mode) %&gt;% 
+  gsub(&#39;-&#39;,&#39;&#39;,x = .) # this gsub() fixes the labels
+# remove features with 0 variance
+sdd &lt;- c(apply(phyXpp@otu_table,1,sd),200)
+X &lt;- X[,sdd&gt;0]</code></pre>
+</div>
+<div id="running-ml-model" class="section level3 unnumbered">
+<h3 class="unnumbered">Running ML model</h3>
+<pre class="r"><code># some formal settings
+repCV10 &lt;- trainControl(method = &quot;repeatedcv&quot;, 
+                        number = 5, 
+                        repeats = 5, 
+                        classProbs = T,
+                        returnResamp = &quot;all&quot;, 
+                        savePredictions = &quot;all&quot;, 
+                        allowParallel = T, 
+                        verboseIter = F)
+
+
+# Run the model including cross-validation
+mdlSPLS &lt;- train(trt ~ ., data = X,
+                 method = &#39;spls&#39;,
+                 preProc = c(&quot;center&quot;, &#39;scale&#39;),
+                 tuneGrid = expand.grid(K = 1:3, # K sets number of components
+                                        eta = seq(0,0.9,0.1), # eta sets sparsity
+                                        kappa = 0.5),
+                 trControl = repCV10)</code></pre>
+</div>
+<div id="plot-the-model" class="section level3 unnumbered">
+<h3 class="unnumbered">Plot the model</h3>
+<pre class="r"><code>plot(mdlSPLS)</code></pre>
+<p><img src="mediationanalysis_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<pre class="r"><code># extract the best model
+best(mdlSPLS$results, metric = &#39;Accuracy&#39;, maximize = T)</code></pre>
+<pre><code>## [1] 23</code></pre>
+<pre class="r"><code>mdlSPLS$results[best(mdlSPLS$results, metric = &#39;Accuracy&#39;, maximize = T),]</code></pre>
+<pre><code>##    K eta kappa  Accuracy     Kappa AccuracySD   KappaSD
+## 23 3 0.2   0.5 0.9220952 0.8359673 0.09354527 0.2004915</code></pre>
+<p>The best model (in a CV sense) is used to generate the propensities
+wrt. classes.</p>
+<p>Although we can use what is optimal in terms of crossvalidation, it
+may be a wise choice to go for a model that are simpler but with
+somewhat the same performance.</p>
+<pre class="r"><code># compute the average prediction (a probability) from a model with 3 components and eta = 0.4
+cvPred &lt;- mdlSPLS$pred %&gt;% 
+  filter(K==2) %&gt;% 
+  filter(abs(eta-0.5)&lt;0.01) %&gt;% 
+  dplyr::mutate(pred = Csection %&gt;% as.numeric()) %&gt;% 
+  group_by(rowIndex) %&gt;% 
+  dplyr::summarise(yhatCV = mean(pred, na.rm = T)) 
+
+# add all the meta data
+cvPred &lt;- data.frame(cvPred, phyXpp@sam_data)</code></pre>
+<p>Lets have a look at the propensity scores (y-axis) versus the classes
+they were trained on.</p>
+<pre class="r"><code>cvPred %&gt;% 
+  ggplot(data = ., aes(Birth_mode,yhatCV)) + 
+  geom_boxplot() + geom_jitter()</code></pre>
+<p><img src="mediationanalysis_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>What you see in this plot is that there is a range of propensity
+scores within each class. In essens that mean, that some of the samples
+from the c-section born group actually have a microbiome mimiking the
+vaginal groups and vice-versa. Also you see some samples with rather
+similar propensity-scores but from different groups.</p>
+</div>
+</div>
+<div id="univariate-exposure---endpoint-models"
+class="section level2 unnumbered">
+<h2 class="unnumbered">Univariate Exposure - Endpoint models</h2>
+<p>Next step is to establish an association between the exposure (birth
+mode) and the endpoint (immuno-markers)</p>
+<p>Here we use a simple linear model</p>
+<pre class="r"><code>tb_expo_ep &lt;- cvPred %&gt;% 
+  gather(var,val,MLNCD3.CD19.all:SPLEENCD69.FoxP3.CD4.1) %&gt;%   
+  group_by(var) %&gt;% 
+  do(lm(data = ., val~Birth_mode) %&gt;% tidy) %&gt;% 
+  filter(term!=&#39;(Intercept)&#39;)
+
+tb_expo_ep %&gt;% 
+  ggplot(data =. , aes(estimate,-log10(p.value), label = var)) + 
+  geom_point() + 
+  ggrepel::geom_text_repel()</code></pre>
+<p><img src="mediationanalysis_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>Here we see that some MLNxxx markers are higher in vaginal born mice,
+while SpleenCD1 markers are lower.</p>
+</div>
+<div id="univariate-microbiome-propensity-score---endpoint-models"
+class="section level2 unnumbered">
+<h2 class="unnumbered">Univariate Microbiome propensity score - Endpoint
+models</h2>
+<p>Here we use a correlation analysis, or alternatively, in case of
+covariates, linear regression.</p>
+<pre class="r"><code>tb_GM_ep &lt;- cvPred %&gt;% 
+  gather(var,val,MLNCD3.CD19.all:SPLEENCD69.FoxP3.CD4.1) %&gt;% 
+  group_by(var) %&gt;% 
+  do(cor.test(data = ., ~val + yhatCV, method = &#39;spearman&#39;) %&gt;% tidy) 
+
+tb_GM_ep %&gt;% 
+  ggplot(data = ., aes(estimate,-log10(p.value), label = var)) + 
+  geom_point() + 
+  ggrepel::geom_text_repel()</code></pre>
+<p><img src="mediationanalysis_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>To some extend this mimik the findings from the exposure - endpoint
+models, as the propensity score is high when the microbiome is very
+C-section like.</p>
+</div>
+<div id="mediation-analysis" class="section level2 unnumbered">
+<h2 class="unnumbered">Mediation analysis</h2>
+<p>For a few immune markers we association both towards exposure (birth
+mode) as well as towards the microbiome propensity of birth mode. For
+instance <em>MLNCD69.FoxP3.CD4</em>, <em>MLNFoxP3.CD4</em> and
+<em>SpleenCD1d.CD3..iNKT.cells</em>, lets run a mediation analysis to
+reveal whether the effect of the birth mode on the immune markers is
+through the microbiome or simply just two seperate effects.</p>
+<pre class="r"><code>library(mediation)
+
+### FOR one example (MLNCD69.FoxP3.CD4)
+# setup the data frame (removing missing entries)
+df &lt;- cvPred %&gt;% filter(!is.na(MLNCD69.FoxP3.CD4))
+
+# build two models
+## mediator models
+mediator_model &lt;- lm(yhatCV ~ Birth_mode, df)
+## outcome model with both exposure and mediator as explanatory variables
+outcome_model &lt;- lm(MLNCD69.FoxP3.CD4 ~ Birth_mode + yhatCV, df)
+
+## Run the mediation analysis and get stats out. 
+results &lt;- mediate(mediator_model, outcome_model, treat= &#39;Birth_mode&#39;, mediator= &#39;yhatCV&#39; ,boot=TRUE, sims=500)
+summary(results)</code></pre>
+<pre><code>## 
+## Causal Mediation Analysis 
+## 
+## Nonparametric Bootstrap Confidence Intervals with the Percentile Method
+## 
+##                Estimate 95% CI Lower 95% CI Upper p-value    
+## ACME              9.370        4.410        15.45  &lt;2e-16 ***
+## ADE              -3.955       -9.907         1.27    0.18    
+## Total Effect      5.415        1.698         9.01  &lt;2e-16 ***
+## Prop. Mediated    1.730        0.823         5.34  &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Sample Size Used: 26 
+## 
+## 
+## Simulations: 500</code></pre>
+<p>Here ideed the total effect seems to be mediated (ACME = Average
+Causal Mediated Effect). While the direct is not significant.</p>
+<p>…here is another example</p>
+<pre class="r"><code># setup the data frame (removing missing entries)
+df &lt;- cvPred %&gt;% filter(!is.na(SpleenCD1d.CD3..iNKT.cells.))
+
+# build two models
+## mediator models
+mediator_model &lt;- lm(yhatCV ~ Birth_mode, df)
+## outcome model with both exposure and mediator as explanatory variables
+outcome_model &lt;- lm(SpleenCD1d.CD3..iNKT.cells. ~ Birth_mode + yhatCV, df)
+
+## Run the mediation analysis and get stats out. 
+results &lt;- mediate(mediator_model, outcome_model, treat= &#39;Birth_mode&#39;, mediator= &#39;yhatCV&#39; ,boot=TRUE, sims=500)
+summary(results)</code></pre>
+<pre><code>## 
+## Causal Mediation Analysis 
+## 
+## Nonparametric Bootstrap Confidence Intervals with the Percentile Method
+## 
+##                Estimate 95% CI Lower 95% CI Upper p-value    
+## ACME             -0.543       -1.179         0.02   0.068 .  
+## ADE              -0.281       -0.983         0.47   0.376    
+## Total Effect     -0.824       -1.256        -0.40  &lt;2e-16 ***
+## Prop. Mediated    0.660       -0.029         1.73   0.068 .  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Sample Size Used: 27 
+## 
+## 
+## Simulations: 500</code></pre>
+<p>Here the effect is somewhat mediated but also some is direct though
+not significant.</p>
+</div>
+<div id="plot-of-three-examples" class="section level2 unnumbered">
+<h2 class="unnumbered">Plot of three examples</h2>
+<pre class="r"><code>cvPred %&gt;% 
+  gather(var,val,MLNCD3.CD19.all:SPLEENCD69.FoxP3.CD4.1) %&gt;% 
+  filter(var %in% c(&#39;SpleenCD1d.CD3..iNKT.cells.&#39;,&#39;MLNCD69.FoxP3.CD4&#39;,&#39;MLNFoxP3.CD4&#39;)) %&gt;% 
+  ggplot(data = ., aes(yhatCV,val, color = Birth_mode)) + 
+  geom_point() + 
+  stat_smooth(method = lm, se = F) + 
+  facet_wrap(~var, scales = &#39;free&#39;) + 
+  theme(legend.position = &#39;bottom&#39;)</code></pre>
+<p><img src="mediationanalysis_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>For the MLNxxx types the story is pretty clear on a fair part of the
+effect is through GM. For the SpleenCD1 marker it is not so obvious. In
+the C-section arm is seems as the microbiome promote a higher response
+when very c-section like. However, in the Vaginal arm - which are just
+lower - there is no correlation.</p>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

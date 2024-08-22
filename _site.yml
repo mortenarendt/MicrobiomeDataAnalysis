@@ -46,6 +46,8 @@ navbar:
           href: hm.html
         - text: "Canonical Correlation Analysis"
           href: cca.html
+        - text: "Mediation analysis via Propensity Scoring"
+          href: mediationanalysis.html    
     - text: 'Data'
       href: https://github.com/mortenarendt/MicrobiomeDataAnalysis/tree/master/data
     

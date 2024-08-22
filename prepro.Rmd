@@ -121,11 +121,12 @@ phyXpp4 <- filter_taxa(phyX, function(x) sum(x > 0)>n*fr, TRUE)
 
 phyXpp5 <- tax_glom(phyX, 'Rank6')
 
-dd1 <- phyloseq::distance(phyXpp1,'bray')
-dd2 <- phyloseq::distance(phyXpp2,'bray')
-dd4 <- phyloseq::distance(phyXpp3,'bray')
-dd3 <- phyloseq::distance(phyXpp4,'bray')
-dd5 <- phyloseq::distance(phyXpp5,'bray')
+mth <- 'wunifrac'
+dd1 <- phyloseq::distance(phyXpp1,mth)
+dd2 <- phyloseq::distance(phyXpp2,mth)
+dd4 <- phyloseq::distance(phyXpp3,mth)
+dd3 <- phyloseq::distance(phyXpp4,mth)
+dd5 <- phyloseq::distance(phyXpp5,mth)
 
 dist_df <- data.frame(TSS = as.vector(dd1), 
                       CSS = as.vector(dd2),
@@ -134,4 +135,5 @@ dist_df <- data.frame(TSS = as.vector(dd1),
                       rank5 = as.vector(dd5))
 cor(dist_df)
 ```
+
 

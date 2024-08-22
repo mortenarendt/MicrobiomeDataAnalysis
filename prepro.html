@@ -297,6 +297,9 @@ $(document).ready(function () {
     <li>
       <a href="cca.html">Canonical Correlation Analysis</a>
     </li>
+    <li>
+      <a href="mediationanalysis.html">Mediation analysis via Propensity Scoring</a>
+    </li>
   </ul>
 </li>
 <li>
@@ -466,11 +469,12 @@ phyXpp4 &lt;- filter_taxa(phyX, function(x) sum(x &gt; 0)&gt;n*fr, TRUE)
 
 phyXpp5 &lt;- tax_glom(phyX, &#39;Rank6&#39;)
 
-dd1 &lt;- phyloseq::distance(phyXpp1,&#39;bray&#39;)
-dd2 &lt;- phyloseq::distance(phyXpp2,&#39;bray&#39;)
-dd4 &lt;- phyloseq::distance(phyXpp3,&#39;bray&#39;)
-dd3 &lt;- phyloseq::distance(phyXpp4,&#39;bray&#39;)
-dd5 &lt;- phyloseq::distance(phyXpp5,&#39;bray&#39;)
+mth &lt;- &#39;wunifrac&#39;
+dd1 &lt;- phyloseq::distance(phyXpp1,mth)
+dd2 &lt;- phyloseq::distance(phyXpp2,mth)
+dd4 &lt;- phyloseq::distance(phyXpp3,mth)
+dd3 &lt;- phyloseq::distance(phyXpp4,mth)
+dd5 &lt;- phyloseq::distance(phyXpp5,mth)
 
 dist_df &lt;- data.frame(TSS = as.vector(dd1), 
                       CSS = as.vector(dd2),

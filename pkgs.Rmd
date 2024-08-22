@@ -38,6 +38,10 @@ __vegan__: Vegan is a very useful package with a lot of functionality. However, 
 
 __phyloseqGraphTest__ and __compositions__: Specific tools microbiome data
 
+__mediation__: For mediating / triangulating effects
+
+__caret__: General machine learning in R
+
 __readr__, __glue__, __reshape2__,  __DT__, __lsmeans__, and __devtools__: additional tools for making life easier. 
 
 __BiocManager__: A package to install things from Bioconductor 
